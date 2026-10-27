@@ -5,14 +5,15 @@
  * `/_functions/*` API — a faithful port of the Wix backend
  * (src/backend/http-functions.js + its service modules, see server/).
  *
- * No framework dependencies — Node's built-in http + fs + crypto only.
+ * No web framework: Node's built-in http/fs/crypto, plus the Firestore driver
+ * (server/store.firestore.js) when STORE_DRIVER=firestore.
  */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { handleApiRequest } from './server/router.js';
-import { ensureSeeded } from './server/store.js';
+import { ensureSeeded, driverName } from './server/store.js';
 import { verifyWebhookSignature, getStripeMode } from './server/stripe.js';
 import { applyStripeEvent } from './server/routes/donations.js';
 import { markIslandSlotsPaid } from './server/routes/islands.js';
@@ -81,7 +82,15 @@ const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
-    /* ---------------- API: /_functions/* ---------------- */
+    /* ---------------- Health check (Cloud Run) ----------------
+       /health is the Cloud Run startup-probe path. /healthz is kept as an alias
+       for local tooling, but note GCP's frontend intercepts /healthz on Cloud
+       Run, so the probe must use /health. */
+    if (url.pathname === '/health' || url.pathname === '/healthz') {
+      send(res, 200, { 'Content-Type': 'application/json' }, JSON.stringify({ ok: true, status: 'healthy' }));
+      return;
+    }
+
     if (url.pathname.startsWith('/_functions/')) {
       const raw = await readBody(req);
 
@@ -145,21 +154,28 @@ const server = createServer(async (req, res) => {
   }
 });
 
-/* Seed the JSON store on boot so the API is ready on the first request. */
-ensureSeeded()
-  .then(() => {
-    const mode = process.env.STRIPE_SECRET_KEY || process.env.TEST_STRIPE_SECRET_KEY ? getStripeMode() : 'not configured';
-    console.log(`HAND-Philippines serving ./dist + /_functions on :${PORT} (Stripe: ${mode})`);
-  })
-  .catch((error) => {
+/* Seed the store on boot, then start listening. With the Firestore driver an
+   unreachable database is fatal (Cloud Run should restart the revision rather
+   than serve traffic with no persistence); the file driver stays best-effort. */
+async function start() {
+  try {
+    await ensureSeeded();
+  } catch (error) {
     console.warn('[server] Store seeding failed:', error?.message || error);
-    server.listen(PORT);
+    if (driverName === 'firestore') {
+      console.error('[server] Fatal: STORE_DRIVER=firestore but Firestore is unreachable. Exiting so Cloud Run can retry.');
+      process.exit(1);
+    }
+  }
+
+  const mode = process.env.STRIPE_SECRET_KEY || process.env.TEST_STRIPE_SECRET_KEY ? getStripeMode() : 'not configured';
+  server.listen(PORT, () => {
+    console.log(`HAND-Philippines serving ./dist + /_functions on :${PORT} (store: ${driverName}, Stripe: ${mode})`);
   });
+}
 
 process.on('unhandledRejection', (reason) => {
   console.error('[server] Unhandled rejection:', reason);
 });
 
-server.listen(PORT, () => {
-  console.log(`HAND-Philippines serving ./dist on :${PORT}`);
-});
+start();

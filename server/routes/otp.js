@@ -44,9 +44,9 @@ export async function requestDonorOtp(input = {}) {
   }
 
   // Resend cooldown: the newest challenge for this address gates a new one.
-  const latest = store
-    .query('DonorOtpChallenges', (row) => row.identifier === identifier)
-    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))[0];
+  const latest = (
+    await store.query('DonorOtpChallenges', (row) => row.identifier === identifier)
+  ).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))[0];
 
   if (latest) {
     const elapsed = Date.now() - new Date(latest.createdAt).getTime();
@@ -58,14 +58,14 @@ export async function requestDonorOtp(input = {}) {
       };
     }
     // Invalidate the previous challenge for this address.
-    store.remove('DonorOtpChallenges', latest._id);
+    await store.remove('DonorOtpChallenges', latest._id);
   }
 
   const code = generateOtp();
   const challengeId = `otc_${crypto.randomBytes(16).toString('hex')}`;
   const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
 
-  store.insert('DonorOtpChallenges', {
+  await store.insert('DonorOtpChallenges', {
     _id: challengeId,
     identifier,
     codeHash: hashCode(identifier, code),
@@ -100,29 +100,29 @@ export async function verifyDonorOtp(input = {}) {
     return { ok: false, error: 'Enter the six-digit code from the email.' };
   }
 
-  const challenge = store.get('DonorOtpChallenges', challengeId);
+  const challenge = await store.get('DonorOtpChallenges', challengeId);
   if (!challenge || challenge.identifier !== email) {
     return { ok: false, error: 'That code is invalid or has expired.' };
   }
   if (new Date(challenge.expiresAt) < new Date()) {
-    store.remove('DonorOtpChallenges', challengeId);
+    await store.remove('DonorOtpChallenges', challengeId);
     return { ok: false, error: 'That code is invalid or has expired.' };
   }
   if (Number(challenge.attempts || 0) >= OTP_MAX_ATTEMPTS) {
-    store.remove('DonorOtpChallenges', challengeId);
+    await store.remove('DonorOtpChallenges', challengeId);
     return { ok: false, error: 'Too many attempts. Please request a new code.' };
   }
 
   if (challenge.codeHash !== hashCode(email, code)) {
-    store.update('DonorOtpChallenges', { ...challenge, attempts: Number(challenge.attempts || 0) + 1 });
+    await store.update('DonorOtpChallenges', { ...challenge, attempts: Number(challenge.attempts || 0) + 1 });
     return { ok: false, error: 'That code is invalid or has expired.' };
   }
 
-  store.remove('DonorOtpChallenges', challengeId);
+  await store.remove('DonorOtpChallenges', challengeId);
 
   // Ensure a donor profile row exists for the verified address.
-  if (!store.first('DonorProfiles', (row) => normalizeEmail(row.email) === email)) {
-    store.insert('DonorProfiles', {
+  if (!(await store.first('DonorProfiles', (row) => normalizeEmail(row.email) === email))) {
+    await store.insert('DonorProfiles', {
       _id: `dp_${randomToken(8)}`,
       email,
       createdAt: new Date().toISOString(),
@@ -131,7 +131,7 @@ export async function verifyDonorOtp(input = {}) {
 
   const sessionKey = `dsk_${crypto.randomBytes(24).toString('hex')}`;
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
-  store.insert('DonorSessions', {
+  await store.insert('DonorSessions', {
     _id: sessionKey,
     donorEmail: email,
     createdAt: new Date().toISOString(),

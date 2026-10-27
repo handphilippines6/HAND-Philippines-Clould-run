@@ -22,7 +22,7 @@ export async function contactMessage(input = {}) {
     return { ok: false, success: false, error: result.error };
   }
 
-  const record = store.insert(collection, result.message);
+  const record = await store.insert(collection, result.message);
   await persistAuditEvent(
     lane === 'interest' ? 'INTEREST_SUBMITTED' : 'CONTACT_MESSAGE_SUBMITTED',
     buildSubmissionAuditDetails(record, { ipHash: null }),

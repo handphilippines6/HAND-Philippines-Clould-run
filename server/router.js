@@ -43,10 +43,10 @@ function originGuard(request) {
   return null;
 }
 
-function requireDonorSession(request) {
+async function requireDonorSession(request) {
   const token = bearerToken(request);
   if (!token) return null;
-  const session = store.get('DonorSessions', token);
+  const session = await store.get('DonorSessions', token);
   if (!session || new Date(session.expiresAt) < new Date()) return null;
   return session;
 }
@@ -67,8 +67,8 @@ async function rateLimited(request, lane) {
   }
   return null;
 }
-function requireAdmin(request) {
-  const session = admin.requireAdminSession(request);
+async function requireAdmin(request) {
+  const session = await admin.requireAdminSession(request);
   if (!session) {
     return json(request, { success: false, error: 'Administrator sign-in required.' }, 401);
   }
@@ -90,18 +90,18 @@ async function route(request, pathname, searchParams, rawBody) {
   switch (switchKey) {
     /* ---- Content (public) ---- */
     case 'GET programs':
-      return json(request, { success: true, programs: content.listPrograms() });
+      return json(request, { success: true, programs: await content.listPrograms() });
     case 'GET program': {
       const slug = searchParams.get('slug');
       if (!slug) {
         return badRequest({ headers: corsHeaders(getOrigin(request)), body: { success: false, error: 'Program slug is required.' } });
       }
-      const program = content.getProgramBySlug(slug);
+      const program = await content.getProgramBySlug(slug);
       if (!program) return json(request, { success: false, error: 'Program not found.' }, 404);
       return json(request, { success: true, program });
     }
     case 'GET campaign': {
-      const campaign = content.getCampaignByIdOrSlug({ id: searchParams.get('id'), slug: searchParams.get('slug') });
+      const campaign = await content.getCampaignByIdOrSlug({ id: searchParams.get('id'), slug: searchParams.get('slug') });
       if (!campaign) return json(request, { success: false, error: 'Campaign not found.' }, 404);
       return json(request, { success: true, campaign });
     }
@@ -110,15 +110,15 @@ async function route(request, pathname, searchParams, rawBody) {
       if (!campaignId) {
         return badRequest({ headers: corsHeaders(getOrigin(request)), body: { success: false, error: 'Campaign ID is required.' } });
       }
-      return json(request, { success: true, donors: content.listDonors(campaignId) });
+      return json(request, { success: true, donors: await content.listDonors(campaignId) });
     }
     case 'GET fundraiser': {
-      const fundraiser = content.getFundraiserBySlug(searchParams.get('slug'));
+      const fundraiser = await content.getFundraiserBySlug(searchParams.get('slug'));
       if (!fundraiser) return json(request, { success: false, error: 'Fundraiser not found.' }, 404);
       return json(request, { success: true, fundraiser });
     }
     case 'GET fundraiserDonors':
-      return json(request, { success: true, supporters: content.listFundraiserSupporters(searchParams.get('slug')) });
+      return json(request, { success: true, supporters: await content.listFundraiserSupporters(searchParams.get('slug')) });
 
     /* ---- Donations (public) ---- */
     case 'GET stripePublishableKey': {
@@ -145,7 +145,7 @@ async function route(request, pathname, searchParams, rawBody) {
     }
     case 'POST createDonationSessionKey': {
       try {
-        const { sessionKey, expiresAt } = donations.createDonationSessionKey(
+        const { sessionKey, expiresAt } = await donations.createDonationSessionKey(
           String(body.paymentIntentId || ''),
           String(body.verificationToken || ''),
         );
@@ -156,14 +156,14 @@ async function route(request, pathname, searchParams, rawBody) {
     }
     case 'POST verifyDonationSession': {
       try {
-        const data = donations.verifyDonationSession(String(body.sessionKey || ''));
+        const data = await donations.verifyDonationSession(String(body.sessionKey || ''));
         return json(request, { success: true, ...data });
       } catch (error) {
         return json(request, { success: false, error: error.message || 'Session verification failed.' }, 401);
       }
     }
     case 'GET donationStatus': {
-      const donation = store.first('Donations', (row) => row.donationId === searchParams.get('id'));
+      const donation = await store.first('Donations', (row) => row.donationId === searchParams.get('id'));
       if (!donation) return json(request, { success: false, error: 'Donation not found.' }, 404);
       return json(request, { success: true, donationId: donation.donationId, status: donation.status });
     }
@@ -188,14 +188,14 @@ async function route(request, pathname, searchParams, rawBody) {
       return json(request, result, result?.ok ? 200 : 400);
     }
     case 'GET donationReceipt': {
-      const session = requireDonorSession(request);
+      const session = await requireDonorSession(request);
       if (!session) {
         return unauthorized({
           headers: corsHeaders(getOrigin(request)),
           body: { success: false, error: 'A donor session is required.' },
         });
       }
-      const donation = store.first(
+      const donation = await store.first(
         'Donations',
         (row) =>
           (row.donationId === searchParams.get('id') || row._id === searchParams.get('id')) &&
@@ -231,14 +231,14 @@ async function route(request, pathname, searchParams, rawBody) {
     }
     case 'POST verifyFundraiserSession': {
       try {
-        const data = fundraisers.verifyFundraiserSession(String(body.sessionKey || ''));
+        const data = await fundraisers.verifyFundraiserSession(String(body.sessionKey || ''));
         return json(request, { success: true, ...data });
       } catch (error) {
         return json(request, { success: false, error: error.message }, 401);
       }
     }
     case 'POST updateFundraiserSettings': {
-      const result = fundraisers.updateFundraiserSettings(body);
+      const result = await fundraisers.updateFundraiserSettings(body);
       return json(request, result, result?.ok ? 200 : 401);
     }
 
@@ -253,7 +253,7 @@ async function route(request, pathname, searchParams, rawBody) {
     }
     case 'POST verifyAdminSession': {
       try {
-        const data = admin.verifyAdminSession(String(body.sessionKey || ''));
+        const data = await admin.verifyAdminSession(String(body.sessionKey || ''));
         return json(request, { success: true, ...data });
       } catch (error) {
         return json(request, { success: false, error: error.message }, 401);
@@ -262,58 +262,58 @@ async function route(request, pathname, searchParams, rawBody) {
     case 'POST adminLogout':
       return json(request, await admin.adminLogout(String(body.sessionKey || bearerToken(request))));
     case 'GET adminOverview': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminOverview() });
+      return json(request, { success: true, ...(await admin.adminOverview()) });
     }
     case 'GET adminDonations': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminDonations() });
+      return json(request, { success: true, ...(await admin.adminDonations()) });
     }
     case 'GET adminCampaigns': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminCampaigns() });
+      return json(request, { success: true, ...(await admin.adminCampaigns()) });
     }
     case 'GET adminFundraisers': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminFundraisers() });
+      return json(request, { success: true, ...(await admin.adminFundraisers()) });
     }
     case 'GET adminContent': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminContent() });
+      return json(request, { success: true, ...(await admin.adminContent()) });
     }
     case 'GET adminUsers': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminUsers() });
+      return json(request, { success: true, ...(await admin.adminUsers()) });
     }
     case 'GET adminSettings': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminSettings() });
+      return json(request, { success: true, ...(await admin.adminSettings()) });
     }
     case 'GET adminAuditLog': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminAuditLog(searchParams) });
+      return json(request, { success: true, ...(await admin.adminAuditLog(searchParams)) });
     }
     case 'GET adminInterests': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
-      return json(request, { success: true, ...admin.adminInterests(searchParams) });
+      return json(request, { success: true, ...(await admin.adminInterests(searchParams)) });
     }
     case 'POST adminRefund': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
       const result = await admin.adminRefund(body);
       return json(request, result, result?.ok ? 200 : 400);
     }
     case 'POST adminInterestStatus': {
-      const denied = requireAdmin(request);
+      const denied = await requireAdmin(request);
       if (denied) return denied;
       const result = await admin.adminInterestStatus(body);
       return json(request, result, result?.ok ? 200 : 400);
@@ -321,15 +321,15 @@ async function route(request, pathname, searchParams, rawBody) {
 
     /* ---- Adopt an Island ---- */
     case 'GET islandBoard':
-      return json(request, islands.islandBoard());
+      return json(request, await islands.islandBoard());
     case 'POST startIslandGift':
     case 'POST reserveIslandSlots': {
       const guard = originGuard(request);
       if (guard) return guard;
-      return json(request, islands.startIslandGift(body), 200);
+      return json(request, await islands.startIslandGift(body), 200);
     }
     case 'POST releaseIslandHold':
-      return json(request, islands.releaseIslandHold(body));
+      return json(request, await islands.releaseIslandHold(body));
 
     default:
       return json(request, { success: false, error: `Unknown endpoint: ${method} /_functions/${endpoint}` }, 404);
@@ -355,6 +355,6 @@ export async function handleApiRequest(request, url, rawBody) {
       body: { success: false, error: 'Unable to complete the request.' },
     });
   } finally {
-    store.flush();
+    await store.flush();
   }
 }

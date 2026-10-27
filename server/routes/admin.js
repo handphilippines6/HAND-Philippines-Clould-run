@@ -34,12 +34,12 @@ const INTEREST_LADDER = {
   COMPLETED: [],
 };
 
-function adminSession(request) {
+async function adminSession(request) {
   const header = request.headers?.authorization || '';
   const match = /^Bearer\s+(.+)$/i.exec(header);
   const key = match ? match[1].trim() : '';
   if (!key) return null;
-  const session = store.get('AdminSessions', key);
+  const session = await store.get('AdminSessions', key);
   if (!session || new Date(session.expiresAt) < new Date()) return null;
   return session;
 }
@@ -53,7 +53,7 @@ export function currentAdmin() {
 export async function adminLogin(input = {}) {
   const email = normalizeEmail(input.email);
   const password = String(input.password || '');
-  const user = store.first('Users', (row) => normalizeEmail(row.email || '') === email && row.role === 'ADMIN');
+  const user = await store.first('Users', (row) => normalizeEmail(row.email || '') === email && row.role === 'ADMIN');
   if (!user || user.passwordHash !== crypto.createHash('sha256').update(password).digest('hex')) {
     await persistAuditEvent('ADMIN_LOGIN_FAILED', { emailHash: email.slice(0, 3) + '***' });
     return { ok: false, success: false, error: 'Those credentials do not match an administrator account.' };
@@ -61,7 +61,7 @@ export async function adminLogin(input = {}) {
 
   const sessionKey = `ask_${crypto.randomBytes(24).toString('hex')}`;
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
-  store.insert('AdminSessions', {
+  await store.insert('AdminSessions', {
     _id: sessionKey,
     email,
     createdAt: new Date().toISOString(),
@@ -71,8 +71,8 @@ export async function adminLogin(input = {}) {
   return { ok: true, success: true, sessionKey, expiresAt, admin: { email, role: 'ADMIN' } };
 }
 
-export function verifyAdminSession(sessionKey) {
-  const session = store.get('AdminSessions', sessionKey);
+export async function verifyAdminSession(sessionKey) {
+  const session = await store.get('AdminSessions', sessionKey);
   if (!session || new Date(session.expiresAt) < new Date()) {
     throw new Error('Your admin session is missing or expired. Please sign in again.');
   }
@@ -84,32 +84,39 @@ export function verifyAdminSession(sessionKey) {
 }
 
 export async function adminLogout(sessionKey) {
-  if (sessionKey) store.remove('AdminSessions', sessionKey);
+  if (sessionKey) await store.remove('AdminSessions', sessionKey);
   return { ok: true, success: true };
 }
 
 /* ---------------------------- Overview ---------------------------- */
-export function adminOverview() {
-  const donations = store.query('Donations');
+export async function adminOverview() {
+  const donations = await store.query('Donations');
   const succeeded = donations.filter((row) => DONATION_SUCCESS_STATUSES.includes(normalizeDonationStatus(row.status)));
   const totalRaisedCents = succeeded.reduce((total, row) => total + Math.round(Number(row.amountCents || 0)), 0);
+
+  const [campaigns, fundraisers, contactMessages, openInterests] = await Promise.all([
+    store.all('Campaigns'),
+    store.all('Fundraisers'),
+    store.all('ContactMessages'),
+    store.query('Interests', (row) => row.status !== 'DECLINED' && row.status !== 'COMPLETED'),
+  ]);
 
   return {
     metrics: {
       totalRaisedCents,
       donationCount: donations.length,
       succeededCount: succeeded.length,
-      campaignCount: store.all('Campaigns').length,
-      fundraiserCount: store.all('Fundraisers').length,
-      contactMessageCount: store.all('ContactMessages').length,
-      openInterests: store.query('Interests', (row) => row.status !== 'DECLINED' && row.status !== 'COMPLETED').length,
+      campaignCount: campaigns.length,
+      fundraiserCount: fundraisers.length,
+      contactMessageCount: contactMessages.length,
+      openInterests: openInterests.length,
     },
     recentDonations: donations
       .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
       .slice(0, 10)
       .map(publicDonationRow),
-    campaigns: store.all('Campaigns').slice(0, 5),
-    fundraisers: store.all('Fundraisers').slice(0, 5),
+    campaigns: campaigns.slice(0, 5),
+    fundraisers: fundraisers.slice(0, 5),
   };
 }
 
@@ -130,30 +137,31 @@ function publicDonationRow(row) {
 }
 
 /* ------------------------- List endpoints ------------------------- */
-export function adminDonations() {
+export async function adminDonations() {
+  const rows = await store.query('Donations');
   return {
-    items: store
-      .query('Donations')
+    items: rows
       .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
       .map(publicDonationRow),
   };
 }
 
-export function adminCampaigns() {
-  return { items: store.all('Campaigns') };
+export async function adminCampaigns() {
+  return { items: await store.all('Campaigns') };
 }
 
-export function adminFundraisers() {
-  return { items: store.all('Fundraisers') };
+export async function adminFundraisers() {
+  return { items: await store.all('Fundraisers') };
 }
 
-export function adminContent() {
-  return { items: store.all('Programs') };
+export async function adminContent() {
+  return { items: await store.all('Programs') };
 }
 
-export function adminUsers() {
+export async function adminUsers() {
+  const users = await store.all('Users');
   return {
-    items: store.all('Users').map((user) => ({
+    items: users.map((user) => ({
       _id: user._id,
       email: user.email,
       role: user.role,
@@ -162,24 +170,24 @@ export function adminUsers() {
   };
 }
 
-export function adminSettings() {
+export async function adminSettings() {
   return {
-    items: store.all('Settings'),
+    items: await store.all('Settings'),
     stripeMode: String(process.env.STRIPE_MODE || 'auto'),
     stripeConfigured: Boolean(process.env.STRIPE_SECRET_KEY || process.env.TEST_STRIPE_SECRET_KEY),
   };
 }
 
-export function adminAuditLog(searchParams) {
+export async function adminAuditLog(searchParams) {
   const eventType = searchParams.get('eventType');
   const from = searchParams.get('from');
   const to = searchParams.get('to');
   const limit = Math.min(200, Number(searchParams.get('limit')) || 50);
   const skip = Number(searchParams.get('skip')) || 0;
 
-  let items = store
-    .query('AuditLog')
-    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  let items = (await store.query('AuditLog')).sort((a, b) =>
+    String(b.createdAt || '').localeCompare(String(a.createdAt || '')),
+  );
   const filters = { eventType: eventType || null, from: from || null, to: to || null };
   if (eventType) items = items.filter((row) => row.eventType === eventType);
   if (from) items = items.filter((row) => row.createdAt >= from);
@@ -198,8 +206,8 @@ export async function adminRefund(input = {}) {
   if (!donationId) return { ok: false, success: false, error: 'A donation ID is required.' };
 
   const donation =
-    store.first('Donations', (row) => row.donationId === donationId) ||
-    store.first('Donations', (row) => row._id === donationId);
+    (await store.first('Donations', (row) => row.donationId === donationId)) ||
+    (await store.first('Donations', (row) => row._id === donationId));
   if (!donation) return { ok: false, success: false, error: 'Donation not found.' };
   if (!DONATION_SUCCESS_STATUSES.includes(normalizeDonationStatus(donation.status))) {
     return { ok: false, success: false, error: 'Only completed donations can be refunded.' };
@@ -220,7 +228,7 @@ export async function adminRefund(input = {}) {
     status: 'SUBMITTED',
     createdAt: new Date().toISOString(),
   };
-  store.insert('Refunds', refund);
+  await store.insert('Refunds', refund);
   await persistAuditEvent('DONATION_REFUND_REQUESTED', {
     donationId: donation.donationId,
     refundId,
@@ -247,8 +255,8 @@ export async function adminInterestStatus(input = {}) {
   }
 
   const application =
-    store.first('Interests', (row) => row._id === interestId) ||
-    store.first('Interests', (row) => row.interestId === interestId);
+    (await store.first('Interests', (row) => row._id === interestId)) ||
+    (await store.first('Interests', (row) => row.interestId === interestId));
   if (!application) return { ok: false, success: false, error: 'Application not found.' };
 
   const current = application.status || 'NEW';
@@ -257,7 +265,7 @@ export async function adminInterestStatus(input = {}) {
     return { ok: false, success: false, error: `Status ${status} is not allowed from ${current}.`, allowedTransitions };
   }
 
-  const updated = store.update('Interests', {
+  const updated = await store.update('Interests', {
     ...application,
     status,
     note: String(input.note || '').slice(0, 500) || application.note || null,
@@ -270,21 +278,25 @@ export async function adminInterestStatus(input = {}) {
 /* Re-export for the router's bearer check. */
 export { adminSession as requireAdminSession };
 
-export function adminInterests(searchParams) {
+export async function adminInterests(searchParams) {
   const status = searchParams.get('status');
   const open = searchParams.get('open') === '1';
   const limit = Math.min(200, Number(searchParams.get('limit')) || 50);
   const skip = Number(searchParams.get('skip')) || 0;
 
-  let items = store
-    .query('Interests')
-    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  let items = (await store.query('Interests')).sort((a, b) =>
+    String(b.createdAt || '').localeCompare(String(a.createdAt || '')),
+  );
   if (status) items = items.filter((row) => (row.status || 'NEW') === status);
   if (open) items = items.filter((row) => row.status !== 'DECLINED' && row.status !== 'COMPLETED');
 
+  const [allInterests, openInterests] = await Promise.all([
+    store.all('Interests'),
+    store.query('Interests', (row) => row.status !== 'DECLINED' && row.status !== 'COMPLETED'),
+  ]);
   const summary = {
-    total: store.all('Interests').length,
-    open: store.query('Interests', (row) => row.status !== 'DECLINED' && row.status !== 'COMPLETED').length,
+    total: allInterests.length,
+    open: openInterests.length,
   };
   return { items: items.slice(skip, skip + limit), summary, pagination: { total: items.length, limit, skip } };
 }

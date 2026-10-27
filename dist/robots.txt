@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-
-# Auth-gated and tokenized routes — nothing here is for search engines.
-Disallow: /admin/
-Disallow: /portal/
-Disallow: /apply
-Disallow: /donate/gratitude/
-Disallow: /training/

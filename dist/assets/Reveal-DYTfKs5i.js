@@ -1,1 +1,0 @@
-import{j as i}from"./vendor-mXSwYjXL.js";function m({children:t,as:e="div",delay:s=0,className:r="",...a}){return i.jsx(e,{className:`hp-reveal ${r}`.trim(),style:s?{transitionDelay:`${s}ms`}:void 0,...a,children:t})}export{m as R};

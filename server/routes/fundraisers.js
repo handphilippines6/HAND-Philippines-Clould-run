@@ -28,9 +28,9 @@ export async function fundraiserLogin(input = {}) {
     return { ok: false, success: false, error: 'Email and password are required.' };
   }
 
-  const profile = store.first('FundraiserProfiles', (row) => normalizeEmail(row.email) === email);
-  const user = store.first('Users', (row) => normalizeEmail(row.email) === email);
-  const fundraiser = store.first('Fundraisers', (row) => normalizeEmail(row.email) === email);
+  const profile = await store.first('FundraiserProfiles', (row) => normalizeEmail(row.email) === email);
+  const user = await store.first('Users', (row) => normalizeEmail(row.email) === email);
+  const fundraiser = await store.first('Fundraisers', (row) => normalizeEmail(row.email) === email);
 
   const passwordOk =
     (profile && profile.passwordHash === hashPassword(password)) ||
@@ -42,7 +42,7 @@ export async function fundraiserLogin(input = {}) {
   }
 
   const sessionKey = `fsk_${crypto.randomBytes(24).toString('hex')}`;
-  store.insert('FundraiserSessions', {
+  await store.insert('FundraiserSessions', {
     _id: sessionKey,
     email,
     fundraiserId: (fundraiser || profile)?.fundraiserId || fundraiser?._id || null,
@@ -57,24 +57,24 @@ function hashForAudit(value) {
   return crypto.createHash('sha256').update(String(value || '')).digest('hex').slice(0, 32);
 }
 
-export function verifyFundraiserSession(sessionKey) {
-  const session = store.get('FundraiserSessions', sessionKey);
+export async function verifyFundraiserSession(sessionKey) {
+  const session = await store.get('FundraiserSessions', sessionKey);
   if (!session || new Date(session.expiresAt) < new Date()) {
     throw new Error('Your session is missing or expired. Please sign in again.');
   }
 
   const fundraiser =
-    (session.fundraiserId && store.get('Fundraisers', session.fundraiserId)) ||
-    store.first('Fundraisers', (row) => normalizeEmail(row.email || '') === normalizeEmail(session.email || ''));
+    (session.fundraiserId && (await store.get('Fundraisers', session.fundraiserId))) ||
+    (await store.first('Fundraisers', (row) => normalizeEmail(row.email || '') === normalizeEmail(session.email || '')));
 
   if (!fundraiser) throw new Error('No fundraiser profile is linked to this account.');
 
   const campaign = fundraiser.campaignId
-    ? store.first('Campaigns', (row) => row._id === fundraiser.campaignId)
+    ? await store.first('Campaigns', (row) => row._id === fundraiser.campaignId)
     : null;
-  const donations = store
-    .query('Donations', (row) => row.fundraiserId === fundraiser._id)
-    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const donations = (
+    await store.query('Donations', (row) => row.fundraiserId === fundraiser._id)
+  ).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
   const succeeded = donations.filter((row) => DONATION_SUCCESS_STATUSES.includes(normalizeDonationStatus(row.status)));
   const totalRaisedCents = succeeded.reduce((total, row) => total + Math.round(Number(row.amountCents || 0)), 0);
   const averageGiftCents = succeeded.length ? Math.round(totalRaisedCents / succeeded.length) : 0;
@@ -111,20 +111,20 @@ export function verifyFundraiserSession(sessionKey) {
 }
 
 export async function updateFundraiserSettings(input = {}) {
-  const session = store.get('FundraiserSessions', String(input.sessionKey || ''));
+  const session = await store.get('FundraiserSessions', String(input.sessionKey || ''));
   if (!session || new Date(session.expiresAt) < new Date()) {
     return { ok: false, success: false, error: 'Your session is missing or expired. Please sign in again.' };
   }
 
   const fundraiser = session.fundraiserId
-    ? store.get('Fundraisers', session.fundraiserId)
-    : store.first('Fundraisers', (row) => normalizeEmail(row.email || '') === normalizeEmail(session.email || ''));
+    ? await store.get('Fundraisers', session.fundraiserId)
+    : await store.first('Fundraisers', (row) => normalizeEmail(row.email || '') === normalizeEmail(session.email || ''));
   if (!fundraiser) {
     return { ok: false, success: false, error: 'No fundraiser profile is linked to this account.' };
   }
 
   const clean = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
-  const updated = store.update('Fundraisers', {
+  const updated = await store.update('Fundraisers', {
     ...fundraiser,
     name: clean(input.name, 120) || fundraiser.name,
     profilePhotoUrl: clean(input.profilePhotoUrl, 500) || fundraiser.profilePhotoUrl,

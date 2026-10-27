@@ -6,7 +6,7 @@ import { insert } from './store.js';
 
 export async function persistAuditEvent(eventType, details = {}) {
   try {
-    insert('AuditLog', {
+    await insert('AuditLog', {
       eventType,
       details,
       createdAt: new Date().toISOString(),

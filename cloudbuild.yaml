@@ -4,8 +4,8 @@
 #   gcloud builds submit --config=cloudbuild.yaml --substitutions=_SERVICE_NAME=hand-philippines-web,_REGION=us-central1
 #
 # The image is built with the Dockerfile, pushed to Artifact Registry, and
-# released as a new Cloud Run revision. Cloud Run serves the dependency-free
-# Node static server (server.js), which provides the SPA fallback for deep links.
+# released as a new Cloud Run revision running server.js (SPA fallback + the
+# /_functions API backed by Firestore).
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -30,10 +30,23 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      # Firestore driver + Cloud Run startup probe on /health (/healthz is
+      # intercepted by the GCP frontend and must not be used as a probe path).
+      - '--set-env-vars'
+      - 'STORE_DRIVER=firestore,NODE_ENV=production'
+      - '--startup-probe'
+      - 'httpGet.path=/health,initialDelaySeconds=5,timeoutSeconds=3,periodSeconds=10,failureThreshold=6'
+      # Dedicated runtime service account (create it and grant
+      # roles/datastore.user before the first deploy — see server/README.md).
+      - '--service-account'
+      - '${_SERVICE_ACCOUNT}'
+      # Secrets are injected separately so they never live in this file, e.g.:
+      #   --set-secrets STRIPE_SECRET_KEY=stripe-secret-key:latest,...
 
 substitutions:
   _SERVICE_NAME: hand-philippines-web
   _REGION: us-central1
+  _SERVICE_ACCOUNT: hand-philippines-web@$PROJECT_ID.iam.gserviceaccount.com
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:latest'

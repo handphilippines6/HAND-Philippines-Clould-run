@@ -40,15 +40,15 @@ function cleanText(value, maxLength = 500) {
 /* ------------------------------------------------------------------ *
  * Program / fundraiser resolution + validation (stripeBackend.web.js)
  * ------------------------------------------------------------------ */
-function resolveProgram(programId) {
+async function resolveProgram(programId) {
   return (
-    store.first('Programs', (program) => program._id === programId || program.slug === programId) ||
-    store.first('Campaigns', (campaign) => campaign._id === programId)
+    (await store.first('Programs', (program) => program._id === programId || program.slug === programId)) ||
+    (await store.first('Campaigns', (campaign) => campaign._id === programId))
   );
 }
 
-function validateProgram(programId) {
-  const program = resolveProgram(programId);
+async function validateProgram(programId) {
+  const program = await resolveProgram(programId);
   if (!program) throw new Error('Program not found.');
   if (program.status && String(program.status).toLowerCase() !== 'active') {
     throw new Error('This program is not currently accepting donations.');
@@ -63,9 +63,9 @@ function validateProgram(programId) {
   return program;
 }
 
-function validateFundraiser(campaignId, fundraiserId) {
+async function validateFundraiser(campaignId, fundraiserId) {
   if (!fundraiserId) return null;
-  const fundraiser = store.first(
+  const fundraiser = await store.first(
     'Fundraisers',
     (row) => row._id === fundraiserId || row.slug === fundraiserId,
   );
@@ -100,8 +100,8 @@ export async function createPaymentIntent(input = {}) {
     if (!donorEmail) {
       throw new Error('A valid donor email address is required.');
     }
-    validateProgram(campaignId);
-    validateFundraiser(campaignId, fundraiserId);
+    await validateProgram(campaignId);
+    await validateFundraiser(campaignId, fundraiserId);
 
     if (!isConfigured()) {
       throw new Error(
@@ -112,7 +112,7 @@ export async function createPaymentIntent(input = {}) {
     const currency = 'usd';
     const requestedIntentId = cleanText(input.paymentIntentId, 200);
     const existing = requestedIntentId
-      ? store.first('Donations', (donation) => donation.paymentIntentId === requestedIntentId)
+      ? await store.first('Donations', (donation) => donation.paymentIntentId === requestedIntentId)
       : null;
 
     if (existing) {
@@ -135,7 +135,7 @@ export async function createPaymentIntent(input = {}) {
         },
       });
       const verificationToken = existing.verificationToken || paymentIntent.metadata?.verificationToken;
-      store.update('Donations', {
+      await store.update('Donations', {
         ...existing,
         amountCents,
         donorEmail: donorEmail || null,
@@ -173,7 +173,7 @@ export async function createPaymentIntent(input = {}) {
       },
     });
 
-    store.insert('Donations', {
+    await store.insert('Donations', {
       donationId,
       paymentIntentId: paymentIntent.id,
       programId: campaignId,
@@ -221,7 +221,7 @@ export async function createPaymentIntent(input = {}) {
  * status back from Stripe and applies it.
  * ------------------------------------------------------------------ */
 export async function verifyAndUpdateStatus(paymentIntentId, verificationToken) {
-  const donation = store.first('Donations', (row) => row.paymentIntentId === paymentIntentId);
+  const donation = await store.first('Donations', (row) => row.paymentIntentId === paymentIntentId);
   if (!donation) throw new Error('Donation record was not found.');
   if (!verificationToken || donation.verificationToken !== verificationToken) {
     throw new Error('This donation could not be verified.');
@@ -239,7 +239,7 @@ export async function verifyAndUpdateStatus(paymentIntentId, verificationToken) 
   const canonical = statusMap[String(intent.status || '').toLowerCase()] || normalizeDonationStatus(intent.status);
 
   const previous = normalizeDonationStatus(donation.status);
-  const updated = store.update('Donations', {
+  const updated = await store.update('Donations', {
     ...donation,
     status: canonical,
     paidAt: canonical === 'SUCCEEDED' ? donation.paidAt || new Date().toISOString() : donation.paidAt || null,
@@ -253,6 +253,14 @@ export async function verifyAndUpdateStatus(paymentIntentId, verificationToken) 
 }
 
 /* Totals roll-up (DonationService.web.js updateProgramTotals/updateFundraiserTotals). */
+async function sumSuccessful(matchValue, field) {
+  const rows = await store.query(
+    'Donations',
+    (row) => row[field] === matchValue && DONATION_SUCCESS_STATUSES.includes(normalizeDonationStatus(row.status)),
+  );
+  return rows.reduce((total, row) => total + Math.round(Number(row.amountCents || 0)), 0);
+}
+
 async function applySuccessfulTotals(donation) {
   await persistAuditEvent('DONATION_SUCCEEDED', {
     donationId: donation.donationId,
@@ -261,14 +269,14 @@ async function applySuccessfulTotals(donation) {
     fundraiserId: donation.fundraiserId || null,
   });
 
-  const programTotal = sumSuccessful(donation.campaignId, 'campaignId');
+  const programTotal = await sumSuccessful(donation.campaignId, 'campaignId');
   const programRow =
-    store.first('Programs', (row) => row._id === donation.campaignId) ||
-    store.first('Campaigns', (row) => row._id === donation.campaignId);
+    (await store.first('Programs', (row) => row._id === donation.campaignId)) ||
+    (await store.first('Campaigns', (row) => row._id === donation.campaignId));
   if (programRow) {
-    const collection = store.first('Programs', (row) => row._id === programRow._id) ? 'Programs' : 'Campaigns';
+    const collection = (await store.first('Programs', (row) => row._id === programRow._id)) ? 'Programs' : 'Campaigns';
     const goalCents = Number(programRow.goalCents ?? 0);
-    store.update(collection, {
+    await store.update(collection, {
       ...programRow,
       raisedCents: programTotal,
       currentRaised: programTotal / 100,
@@ -278,10 +286,10 @@ async function applySuccessfulTotals(donation) {
   }
 
   if (donation.fundraiserId) {
-    const fundraiser = store.first('Fundraisers', (row) => row._id === donation.fundraiserId);
+    const fundraiser = await store.first('Fundraisers', (row) => row._id === donation.fundraiserId);
     if (fundraiser) {
-      const total = sumSuccessful(fundraiser._id, 'fundraiserId');
-      store.update('Fundraisers', {
+      const total = await sumSuccessful(fundraiser._id, 'fundraiserId');
+      await store.update('Fundraisers', {
         ...fundraiser,
         raisedCents: total,
         currentRaised: total / 100,
@@ -294,8 +302,8 @@ async function applySuccessfulTotals(donation) {
 /* ------------------------------------------------------------------ *
  * Donor dashboard sessions (createDonationSessionKey / verifyDonationSession)
  * ------------------------------------------------------------------ */
-export function createDonationSessionKey(paymentIntentId, verificationToken) {
-  const donation = store.first('Donations', (row) => row.paymentIntentId === paymentIntentId);
+export async function createDonationSessionKey(paymentIntentId, verificationToken) {
+  const donation = await store.first('Donations', (row) => row.paymentIntentId === paymentIntentId);
   if (!donation) throw new Error('Donation record was not found.');
   if (!verificationToken || donation.verificationToken !== verificationToken) {
     throw new Error('This donation could not be verified.');
@@ -303,7 +311,7 @@ export function createDonationSessionKey(paymentIntentId, verificationToken) {
 
   const sessionKey = `dsk_${crypto.randomBytes(24).toString('hex')}`;
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
-  store.insert('DonorSessions', {
+  await store.insert('DonorSessions', {
     _id: sessionKey,
     donorEmail: donation.donorEmail,
     donationId: donation.donationId,
@@ -314,16 +322,16 @@ export function createDonationSessionKey(paymentIntentId, verificationToken) {
   return { sessionKey, expiresAt };
 }
 
-export function verifyDonationSession(sessionKey) {
-  const session = store.get('DonorSessions', sessionKey);
+export async function verifyDonationSession(sessionKey) {
+  const session = await store.get('DonorSessions', sessionKey);
   if (!session || new Date(session.expiresAt) < new Date()) {
     throw new Error('Your dashboard session has expired. Please request a new code.');
   }
 
   const email = session.donorEmail;
-  const donations = store
-    .query('Donations', (row) => normalizeEmail(row.donorEmail || '') === normalizeEmail(email || ''))
-    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const donations = (
+    await store.query('Donations', (row) => normalizeEmail(row.donorEmail || '') === normalizeEmail(email || ''))
+  ).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
 
   const succeeded = donations.filter((row) =>
     DONATION_SUCCESS_STATUSES.includes(normalizeDonationStatus(row.status)),
@@ -333,7 +341,7 @@ export function verifyDonationSession(sessionKey) {
     0,
   );
 
-  const profile = store.first('DonorProfiles', (row) => normalizeEmail(row.email) === normalizeEmail(email || ''));
+  const profile = await store.first('DonorProfiles', (row) => normalizeEmail(row.email) === normalizeEmail(email || ''));
   const donor = {
     firstName: profile?.firstName || (donations[0]?.donorName || '').split(' ')[0] || '',
     lastName: profile?.lastName || (donations[0]?.donorName || '').split(' ').slice(1).join(' '),
@@ -430,7 +438,7 @@ export async function applyStripeEvent(event) {
   const paymentIntentId = intent.id || '';
 
   if (type === 'payment_intent.succeeded' || type === 'payment_intent.amount_capturable_updated') {
-    const donation = store.first('Donations', (row) => row.paymentIntentId === paymentIntentId);
+    const donation = await store.first('Donations', (row) => row.paymentIntentId === paymentIntentId);
     if (!donation) {
       await persistAuditEvent('DONATION_PAYMENT_INTENT_UNMATCHED', { paymentIntentId, stripeEventId: event.id });
       return { applied: false };
@@ -438,7 +446,7 @@ export async function applyStripeEvent(event) {
     const previous = normalizeDonationStatus(donation.status);
     if (DONATION_SUCCESS_STATUSES.includes(previous)) return { applied: false };
 
-    const updated = store.update('Donations', {
+    const updated = await store.update('Donations', {
       ...donation,
       status: 'SUCCEEDED',
       paidAt: new Date().toISOString(),
@@ -456,21 +464,21 @@ export async function applyStripeEvent(event) {
     'payment_intent.canceled': 'CANCELLED',
   };
   if (transitionMap[type]) {
-    const donation = store.first('Donations', (row) => row.paymentIntentId === paymentIntentId);
+    const donation = await store.first('Donations', (row) => row.paymentIntentId === paymentIntentId);
     if (!donation) return { applied: false };
     const previous = normalizeDonationStatus(donation.status);
     if (DONATION_SUCCESS_STATUSES.includes(previous)) return { applied: false };
-    store.update('Donations', { ...donation, status: transitionMap[type], updatedAt: new Date().toISOString() });
+    await store.update('Donations', { ...donation, status: transitionMap[type], updatedAt: new Date().toISOString() });
     return { applied: true };
   }
 
   if (type === 'charge.refunded') {
-    const donation = store.first(
+    const donation = await store.first(
       'Donations',
       (row) => row.paymentIntentId === (intent.payment_intent || paymentIntentId),
     );
     if (!donation) return { applied: false };
-    store.update('Donations', { ...donation, status: 'REFUNDED', updatedAt: new Date().toISOString() });
+    await store.update('Donations', { ...donation, status: 'REFUNDED', updatedAt: new Date().toISOString() });
     return { applied: true };
   }
 
