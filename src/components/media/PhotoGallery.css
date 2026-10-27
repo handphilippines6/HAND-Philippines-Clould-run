@@ -1,0 +1,185 @@
+/* Ported from model1/hp-styles.js (components/media/PhotoGallery.css). */
+
+/* PhotoGallery — grid + review affordance */
+
+.hp-gallery__lead {
+  color: var(--hp-color-text-muted);
+  max-width: 68ch;
+  margin-bottom: var(--hp-space-5);
+}
+
+.hp-gallery__grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--hp-space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .hp-gallery__grid--2,
+  .hp-gallery__grid--3,
+  .hp-gallery__grid--4 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .hp-gallery__grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hp-gallery__grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .hp-gallery__grid--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.hp-gallery__item {
+  margin: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Grid navigator arrows ------------------------------------------------ */
+.hp-gallery__nav {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.3rem;
+  border-radius: var(--hp-radius-pill);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--hp-color-border);
+  box-shadow: var(--hp-shadow-sm);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--hp-dur) var(--hp-ease), transform var(--hp-dur) var(--hp-ease);
+  pointer-events: none;
+}
+
+.hp-gallery__item:hover .hp-gallery__nav,
+.hp-gallery__item:focus-within .hp-gallery__nav {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+@media (hover: none) {
+  .hp-gallery__nav {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+}
+
+.hp-gallery__nav-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--hp-blue-700);
+  background: var(--hp-blue-50);
+  border: 1px solid var(--hp-blue-200);
+  transition: background-color var(--hp-dur) var(--hp-ease), color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-gallery__nav-btn:hover {
+  background: var(--hp-blue-600);
+  border-color: var(--hp-blue-600);
+  color: #fff;
+}
+
+.hp-gallery__nav-btn:focus-visible {
+  outline: 3px solid var(--hp-blue-400);
+  outline-offset: 2px;
+}
+
+.hp-gallery__nav-count {
+  font-size: var(--hp-text-xs);
+  font-weight: 800;
+  color: var(--hp-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.hp-gallery__btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: var(--hp-radius-md);
+  overflow: hidden;
+  cursor: zoom-in;
+  text-align: left;
+  transition: transform var(--hp-dur) var(--hp-ease), box-shadow var(--hp-dur) var(--hp-ease);
+}
+
+.hp-gallery__btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--hp-shadow-lg);
+}
+
+.hp-gallery__btn .hp-img__frame {
+  border-radius: var(--hp-radius-md);
+}
+
+.hp-gallery__btn:hover .hp-img__el {
+  transform: scale(1.04);
+}
+
+/* Review veil */
+.hp-gallery__veil {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, rgba(6, 35, 80, 0) 40%, rgba(6, 35, 80, 0.55) 100%);
+  opacity: 0;
+  transition: opacity var(--hp-dur) var(--hp-ease);
+  pointer-events: none;
+}
+
+.hp-gallery__btn:hover .hp-gallery__veil,
+.hp-gallery__btn:focus-visible .hp-gallery__veil {
+  opacity: 1;
+}
+
+.hp-gallery__zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--hp-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hp-ink-900);
+  background: var(--hp-yellow-400);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--hp-radius-pill);
+  transform: translateY(8px);
+  transition: transform var(--hp-dur) var(--hp-ease);
+}
+
+.hp-gallery__btn:hover .hp-gallery__zoom,
+.hp-gallery__btn:focus-visible .hp-gallery__zoom {
+  transform: none;
+}
+
+.hp-gallery__cap {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: var(--hp-text-xs);
+  color: var(--hp-color-text-muted);
+  line-height: var(--hp-leading-snug);
+}

@@ -1,0 +1,39 @@
+# Cloud Build — build the Docker image and deploy the React SPA to Cloud Run.
+#
+# Usage (from the repo root):
+#   gcloud builds submit --config=cloudbuild.yaml --substitutions=_SERVICE_NAME=hand-philippines-web,_REGION=us-central1
+#
+# The image is built with the Dockerfile, pushed to Artifact Registry, and
+# released as a new Cloud Run revision. Cloud Run serves the dependency-free
+# Node static server (server.js), which provides the SPA fallback for deep links.
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$SHORT_SHA'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:latest'
+      - '.'
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$SHORT_SHA']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$SHORT_SHA'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+substitutions:
+  _SERVICE_NAME: hand-philippines-web
+  _REGION: us-central1
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:latest'

@@ -1,0 +1,4 @@
+
+# Portable backend runtime artifacts
+server/data/
+server/outbox/

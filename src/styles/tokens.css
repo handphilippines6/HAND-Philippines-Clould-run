@@ -1,0 +1,163 @@
+/* Ported from model1/hp-styles.js (styles/tokens.css). */
+
+/* =========================================================================
+   HAND-Philippines — Design Tokens
+   Theme: white canvas · ambient light · Philippine flag blue + sun yellow
+   Components consume var(--hp-*) only; raw values live here.
+   ========================================================================= */
+
+:root {
+  /* ---- Brand: flag blue ramp ---------------------------------------- */
+  --hp-blue-950: #04183a;
+  --hp-blue-900: #062350;
+  --hp-blue-800: #0a3268;
+  --hp-blue-700: #0e3f80;
+  --hp-blue-600: #1350a0; /* primary */
+  --hp-blue-500: #2a6dc0; /* hover / links */
+  --hp-blue-400: #5b95da;
+  --hp-blue-300: #9cc2ee;
+  --hp-blue-200: #c9ddf7;
+  --hp-blue-100: #e4eefb;
+  --hp-blue-50:  #f2f7fe;
+
+  /* ---- Brand: sun yellow ramp --------------------------------------- */
+  --hp-yellow-700: #a86a00;
+  --hp-yellow-600: #cf8708;
+  --hp-yellow-500: #f2a413; /* accent */
+  --hp-yellow-400: #ffb829; /* interactive */
+  --hp-yellow-300: #ffc95c;
+  --hp-yellow-200: #ffe1a3;
+  --hp-yellow-100: #fff1d2;
+  --hp-yellow-50:  #fff9ec;
+
+  /* ---- Flag red: hairline accent only -------------------------------- */
+  --hp-red-600: #ce2031;
+  --hp-red-100: #fde8ea;
+
+  /* ---- Canvas (white) ------------------------------------------------ */
+  --hp-white: #ffffff;
+  --hp-surface: #ffffff;
+  --hp-surface-raised: #ffffff;
+  --hp-surface-sunken: #f6f9fd;
+  --hp-surface-muted: #fbfcfe;
+  --hp-canvas: #ffffff;
+
+  /* ---- Ink ----------------------------------------------------------- */
+  --hp-ink-900: #0a1c33; /* headings */
+  --hp-ink-700: #1e3450; /* body */
+  --hp-ink-600: #3c5674; /* secondary */
+  --hp-ink-500: #5b7593; /* muted */
+  --hp-ink-400: #8299b3;
+  /* ---- Ambient light (soft, never overpowering) ---------------------- */
+  --hp-ambient-blue: rgba(19, 80, 160, 0.07);
+  --hp-ambient-yellow: rgba(242, 164, 19, 0.09);
+  --hp-ambient-amber: rgba(242, 164, 19, 0.05);
+  --hp-ambient-veil: radial-gradient(120% 80% at 50% -10%, rgba(242, 164, 19, 0.10) 0%, rgba(255, 255, 255, 0) 62%);
+
+  /* ---- Gradients ------------------------------------------------------ */
+  --hp-gradient-brand: linear-gradient(135deg, var(--hp-blue-700) 0%, var(--hp-blue-500) 55%, var(--hp-yellow-400) 145%);
+  --hp-gradient-brand-soft: linear-gradient(135deg, var(--hp-blue-50) 0%, var(--hp-yellow-50) 100%);
+  --hp-gradient-sun: linear-gradient(135deg, var(--hp-yellow-400) 0%, var(--hp-yellow-600) 100%);
+  --hp-gradient-rule: linear-gradient(90deg, var(--hp-blue-600) 0%, var(--hp-yellow-400) 100%);
+
+  /* ---- Elevation (ambient, soft) -------------------------------------- */
+  --hp-shadow-xs: 0 1px 2px rgba(10, 28, 51, 0.05);
+  --hp-shadow-sm: 0 2px 8px rgba(10, 28, 51, 0.06), 0 1px 2px rgba(10, 28, 51, 0.04);
+  --hp-shadow-md: 0 8px 24px rgba(10, 28, 51, 0.08), 0 2px 6px rgba(10, 28, 51, 0.04);
+  --hp-shadow-lg: 0 18px 44px rgba(10, 28, 51, 0.12), 0 4px 12px rgba(10, 28, 51, 0.05);
+  --hp-shadow-xl: 0 28px 70px rgba(6, 35, 80, 0.18);
+  --hp-shadow-glow-blue: 0 10px 30px rgba(19, 80, 160, 0.18);
+  --hp-shadow-glow-yellow: 0 10px 30px rgba(242, 164, 19, 0.24);
+  --hp-ring: 0 0 0 3px var(--hp-blue-200);
+
+  /* ---- Type ----------------------------------------------------------- */
+  --hp-font-sans: "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif;
+  --hp-font-display: "Segoe UI Semibold", "Segoe UI", Roboto, -apple-system,
+    BlinkMacSystemFont, Arial, sans-serif;
+
+  --hp-text-xs: 0.75rem;
+  --hp-text-sm: 0.875rem;
+  --hp-text-base: 1rem;
+  --hp-text-md: clamp(1.05rem, 0.4vw + 1rem, 1.125rem);
+  --hp-text-lg: clamp(1.125rem, 0.6vw + 1rem, 1.25rem);
+  --hp-text-xl: clamp(1.375rem, 0.9vw + 1.15rem, 1.625rem);
+  --hp-text-2xl: clamp(1.625rem, 1.4vw + 1.25rem, 2.125rem);
+  --hp-text-3xl: clamp(2rem, 2.1vw + 1.4rem, 2.875rem);
+  --hp-text-4xl: clamp(2.375rem, 3.2vw + 1.5rem, 3.75rem);
+
+  --hp-leading-tight: 1.18;
+  --hp-leading-snug: 1.35;
+  --hp-leading-normal: 1.65;
+
+  /* ---- Space scale ------------------------------------------------------ */
+  --hp-space-1: 0.25rem;
+  --hp-space-2: 0.5rem;
+  --hp-space-3: 0.75rem;
+  --hp-space-4: 1rem;
+  --hp-space-5: 1.5rem;
+  --hp-space-6: 2rem;
+  --hp-space-7: 3rem;
+  --hp-space-8: 4rem;
+  --hp-space-9: 6rem;
+  --hp-section-y: clamp(3.5rem, 7vw, 6.5rem);
+
+  /* ---- Shape ------------------------------------------------------------ */
+  --hp-radius-sm: 8px;
+  --hp-radius-md: 12px;
+  --hp-radius-lg: 18px;
+  --hp-radius-xl: 26px;
+  --hp-radius-pill: 999px;
+  --hp-border-w: 1px;
+
+  /* ---- Layout ------------------------------------------------------------ */
+  --hp-container: 1180px;
+  --hp-container-narrow: 820px;
+  --hp-gutter: clamp(1rem, 4vw, 2.5rem);
+  --hp-header-h: 72px;
+
+  /* ---- Motion ------------------------------------------------------------ */
+  --hp-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --hp-dur-fast: 140ms;
+  --hp-dur: 240ms;
+  --hp-dur-slow: 420ms;
+
+  /* ---- Z-index ----------------------------------------------------------- */
+  --hp-z-header: 100;
+  --hp-z-lightbox: 1000;
+  --hp-z-skip: 1100;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --hp-dur-fast: 1ms;
+    --hp-dur: 1ms;
+    --hp-dur-slow: 1ms;
+  }
+}
+
+:root {
+  --hp-ink-300: #b3c4d6;
+
+  /* ---- Semantic ------------------------------------------------------ */
+  --hp-color-primary: var(--hp-blue-600);
+  --hp-color-primary-hover: var(--hp-blue-700);
+  --hp-color-primary-soft: var(--hp-blue-50);
+  --hp-color-accent: var(--hp-yellow-500);
+  --hp-color-accent-hover: var(--hp-yellow-400);
+  --hp-color-accent-soft: var(--hp-yellow-50);
+  --hp-color-text: var(--hp-ink-700);
+  --hp-color-text-strong: var(--hp-ink-900);
+  --hp-color-text-muted: var(--hp-ink-500);
+  --hp-color-border: #dde7f2;
+  --hp-color-border-strong: #c3d5e8;
+  --hp-color-success: #1a7f52;
+  --hp-color-success-soft: #e6f5ee;
+  --hp-color-info: var(--hp-blue-600);
+  --hp-color-info-soft: var(--hp-blue-50);
+  --hp-color-warning: var(--hp-yellow-600);
+  --hp-color-warning-soft: var(--hp-yellow-50);
+  --hp-color-danger: var(--hp-red-600);
+  --hp-color-danger-soft: var(--hp-red-100);
+  --hp-focus-ring: 0 0 0 3px var(--hp-blue-200), 0 0 0 5px rgba(19, 80, 160, 0.35);
+}

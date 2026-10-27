@@ -1,0 +1,7 @@
+# Keep the Google Cloud deploy context small.
+node_modules
+dist
+.wix
+.git
+*.log
+wix-error.log

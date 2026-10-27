@@ -1,0 +1,78 @@
+/* Interactive map (React-only). */
+.loc {
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--line, #dce6f0);
+  border-radius: 16px;
+  background: #fff;
+  max-width: 320px;
+}
+.loc__wrap {
+  position: relative;
+}
+.loc svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.loc__pilot {
+  cursor: pointer;
+  outline: none;
+}
+.loc__pilot:focus-visible .loc__ring {
+  stroke-width: 3;
+}
+.loc__ring {
+  transform-origin: 122.7px 174.5px;
+  animation: loc-pulse 2.4s ease-out infinite;
+}
+.loc__pilot.is-active .loc__ring {
+  stroke: #b23f14;
+}
+@keyframes loc-pulse {
+  0% {
+    stroke-width: 1.6;
+    opacity: 1;
+  }
+  70% {
+    stroke-width: 9;
+    opacity: 0;
+  }
+  100% {
+    stroke-width: 1.6;
+    opacity: 0;
+  }
+}
+.loc__label {
+  pointer-events: none;
+}
+.loc__tooltip {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  width: min(240px, 80%);
+  transform: translate(-50%, -50%);
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(4, 2, 115, 0.96);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.45;
+  box-shadow: 0 10px 30px rgba(4, 2, 115, 0.35);
+  z-index: 2;
+}
+.loc__tooltip strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+.loc__tooltip span {
+  display: block;
+  opacity: 0.9;
+}
+.loc__caption {
+  margin: 14px 0 0;
+  color: var(--muted, #60708a);
+  font-size: 13px;
+  text-align: center;
+}

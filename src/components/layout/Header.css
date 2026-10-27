@@ -1,0 +1,293 @@
+/* Ported from model1/hp-styles.js (components/layout/Header.css). */
+
+/* ---- Header ------------------------------------------------------------- */
+.hp-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--hp-z-header);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid transparent;
+  transition: box-shadow var(--hp-dur) var(--hp-ease), border-color var(--hp-dur) var(--hp-ease),
+    background-color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-header.is-scrolled {
+  border-bottom-color: var(--hp-color-border);
+  box-shadow: var(--hp-shadow-sm);
+}
+
+.hp-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hp-space-4);
+  min-height: var(--hp-header-h);
+}
+
+/* ---- Logo ---------------------------------------------------------------- */
+.hp-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--hp-color-text-strong);
+  flex-shrink: 0;
+}
+
+.hp-logo:hover {
+  color: var(--hp-color-text-strong);
+}
+
+.hp-logo__mark {
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 3px 8px rgba(242, 164, 19, 0.35));
+  transition: transform var(--hp-dur) var(--hp-ease);
+}
+
+.hp-logo:hover .hp-logo__mark {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+.hp-logo__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.hp-logo__name {
+  font-weight: 800;
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
+  color: var(--hp-blue-700);
+}
+
+.hp-logo__full {
+  font-size: 0.66rem;
+  color: var(--hp-ink-900);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  display: none;
+}
+
+@media (min-width: 520px) {
+  .hp-logo__full {
+    display: block;
+  }
+}
+
+/* ---- Desktop nav --------------------------------------------------------- */
+.hp-nav {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .hp-nav {
+    display: block;
+  }
+}
+
+.hp-nav__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.hp-nav__item {
+  position: relative;
+}
+
+.hp-nav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--hp-color-text);
+  border-radius: var(--hp-radius-sm);
+  white-space: nowrap;
+  transition: color var(--hp-dur) var(--hp-ease), background-color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-nav__link:hover {
+  color: var(--hp-blue-700);
+  background: var(--hp-blue-50);
+}
+
+.hp-nav__link.is-active {
+  color: var(--hp-blue-700);
+  background: var(--hp-blue-50);
+  box-shadow: inset 0 -2px 0 var(--hp-yellow-500);
+}
+
+.hp-header .hp-header__donate {
+  display: none;
+}
+
+@media (min-width: 560px) {
+  .hp-header .hp-header__donate {
+    display: inline-flex;
+  }
+}
+
+.hp-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* ---- Dropdown ------------------------------------------------------------ */
+.hp-nav__drop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 250px;
+  list-style: none;
+  padding: 0.45rem;
+  margin: 0;
+  background: #fff;
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-md);
+  box-shadow: var(--hp-shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity var(--hp-dur) var(--hp-ease), transform var(--hp-dur) var(--hp-ease),
+    visibility var(--hp-dur) var(--hp-ease);
+}
+
+.hp-nav__item:hover .hp-nav__drop,
+.hp-nav__item:focus-within .hp-nav__drop {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.hp-nav__drop-link {
+  display: block;
+  padding: 0.6rem 0.75rem;
+  font-size: var(--hp-text-sm);
+  font-weight: 500;
+  color: var(--hp-color-text);
+  border-radius: var(--hp-radius-sm);
+  transition: background-color var(--hp-dur) var(--hp-ease), color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-nav__drop-link:hover {
+  background: var(--hp-blue-50);
+  color: var(--hp-blue-700);
+}
+
+/* ---- Burger + mobile drawer ------------------------------------------------ */
+.hp-burger {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: var(--hp-radius-sm);
+  color: var(--hp-blue-700);
+  background: var(--hp-blue-50);
+  border: 1px solid var(--hp-blue-200);
+  transition: background-color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-burger:hover {
+  background: var(--hp-blue-100);
+}
+
+@media (min-width: 1100px) {
+  .hp-burger {
+    display: none;
+  }
+}
+
+.hp-drawer {
+  border-top: 1px solid var(--hp-color-border);
+  background: #fff;
+  max-height: calc(100vh - var(--hp-header-h));
+  overflow-y: auto;
+  animation: hp-drawer-in var(--hp-dur) var(--hp-ease);
+}
+
+.hp-drawer[hidden] {
+  display: none;
+}
+
+@keyframes hp-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hp-drawer__list {
+  list-style: none;
+  padding: 0.75rem var(--hp-gutter) 0;
+  margin: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.hp-drawer__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 50px;
+  padding: 0.6rem 0.25rem;
+  font-size: var(--hp-text-md);
+  font-weight: 600;
+  color: var(--hp-color-text-strong);
+  border-bottom: 1px solid var(--hp-color-border);
+  transition: color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-drawer__link.is-active {
+  color: var(--hp-blue-600);
+}
+
+.hp-drawer__sub {
+  list-style: none;
+  padding: 0.35rem 0 0.35rem 0.9rem;
+  margin: 0;
+  border-left: 2px solid var(--hp-yellow-300);
+  display: grid;
+  gap: 0.1rem;
+}
+
+.hp-drawer__sub-link {
+  display: block;
+  padding: 0.55rem 0.25rem;
+  min-height: 44px;
+  font-size: var(--hp-text-sm);
+  color: var(--hp-color-text-muted);
+  line-height: 1.4;
+}
+
+.hp-drawer__sub-link:hover {
+  color: var(--hp-blue-700);
+}
+
+.hp-drawer__cta {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1.25rem var(--hp-gutter) 1.75rem;
+}
+
+@media (min-width: 560px) {
+  .hp-drawer__cta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

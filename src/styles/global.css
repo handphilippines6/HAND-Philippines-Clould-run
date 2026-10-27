@@ -1,0 +1,448 @@
+/* Ported from model1/hp-styles.js (styles/global.css). */
+
+/* =========================================================================
+   HAND-Philippines — Global base + shared primitives
+   Mobile-first. Breakpoints: <640 phone · 640–1024 tablet · >1024 desktop
+   ========================================================================= */
+
+.hp-page, .hp-page::before, .hp-page::after, .hp-page *, .hp-page *::before, .hp-page *::after {
+  box-sizing: border-box;
+}
+
+.hp-page, .hp-page * {
+  margin: 0;
+}
+
+:root {
+  font-family: var(--hp-font-sans);
+  font-size: var(--hp-text-base);
+  line-height: var(--hp-leading-normal);
+  color: var(--hp-color-text);
+  background-color: var(--hp-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* The design's .hp-app shell lives on the host: column flex so #app-main
+     (flex: 1) pushes the footer to the bottom on short pages. */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  /* NOTE: the design's body { overflow-x: hidden } is deliberately NOT
+     carried over - overflow on the shadow host would make it a scroll
+     container and break the sticky header. Decorative orbs live inside
+     sections that already clip (overflow: hidden). */
+}
+
+/* Ambient light wash: soft yellow sunrise at the top, cool blue lower down.
+   Decorative, fixed, pointer-transparent — sits behind all content. */
+
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.hp-page :where(h1, h2, h3, h4, h5) {
+  color: var(--hp-color-text-strong);
+  line-height: var(--hp-leading-tight);
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.hp-page p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--hp-color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--hp-color-primary-hover);
+}
+
+.hp-page :where(ul, ol) {
+  padding-left: 1.25rem;
+}
+
+.hp-page :focus-visible {
+  outline: 3px solid var(--hp-blue-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--hp-yellow-200);
+  color: var(--hp-ink-900);
+}
+
+/* ---- Skip link --------------------------------------------------------- */
+.hp-skip-link {
+  position: absolute;
+  left: var(--hp-space-4);
+  top: -100px;
+  z-index: var(--hp-z-skip);
+  background: var(--hp-blue-700);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--hp-radius-sm);
+  font-weight: 600;
+  box-shadow: var(--hp-shadow-lg);
+  transition: top var(--hp-dur) var(--hp-ease);
+}
+
+.hp-skip-link:focus {
+  top: var(--hp-space-4);
+  color: #fff;
+}
+
+/* ---- Layout primitives -------------------------------------------------- */
+.hp-container {
+  width: 100%;
+  max-width: var(--hp-container);
+  margin-inline: auto;
+  padding-inline: var(--hp-gutter);
+}
+
+.hp-container--narrow {
+  max-width: var(--hp-container-narrow);
+}
+
+.hp-section {
+  position: relative;
+  padding-block: var(--hp-section-y);
+}
+
+/* ---- Section heading ---------------------------------------------------- */
+.hp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--hp-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hp-blue-700);
+  background: var(--hp-blue-50);
+  border: 1px solid var(--hp-blue-200);
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--hp-radius-pill);
+}
+
+.hp-eyebrow--sun {
+  color: var(--hp-yellow-700);
+  background: var(--hp-yellow-50);
+  border-color: var(--hp-yellow-200);
+}
+
+.hp-eyebrow--onDark {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.hp-section-title {
+  font-size: var(--hp-text-2xl);
+  margin-top: var(--hp-space-4);
+  font-family: var(--hp-font-display);
+}
+
+.hp-section-lead {
+  font-size: var(--hp-text-md);
+  color: var(--hp-color-text-muted);
+  max-width: 62ch;
+  margin-top: var(--hp-space-4);
+}
+
+.hp-rule {
+  height: 4px;
+  width: 76px;
+  border-radius: var(--hp-radius-pill);
+  background: var(--hp-gradient-rule);
+  margin-top: var(--hp-space-4);
+}
+
+/* ---- Cards --------------------------------------------------------------- */
+.hp-card {
+  position: relative;
+  background: var(--hp-surface);
+  border: var(--hp-border-w) solid var(--hp-color-border);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: var(--hp-shadow-sm);
+  overflow: hidden;
+  transition: transform var(--hp-dur) var(--hp-ease), box-shadow var(--hp-dur) var(--hp-ease),
+    border-color var(--hp-dur) var(--hp-ease);
+}
+
+a.hp-card:hover,
+.hp-card--interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--hp-shadow-lg);
+  border-color: var(--hp-blue-200);
+  color: inherit;
+}
+
+.hp-card__body {
+  padding: var(--hp-space-5);
+}
+
+.hp-card__title {
+  font-size: var(--hp-text-lg);
+  margin-bottom: var(--hp-space-2);
+}
+
+.hp-card__text {
+  color: var(--hp-color-text-muted);
+  font-size: var(--hp-text-sm);
+}
+
+/* ---- Badge / pill --------------------------------------------------------- */
+.hp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--hp-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--hp-radius-pill);
+  background: var(--hp-blue-50);
+  color: var(--hp-blue-700);
+  border: 1px solid var(--hp-blue-200);
+  white-space: nowrap;
+}
+
+.hp-pill--sun {
+  background: var(--hp-yellow-50);
+  color: var(--hp-yellow-700);
+  border-color: var(--hp-yellow-200);
+}
+
+/* ---- Grid helpers ---------------------------------------------------------- */
+.hp-grid {
+  display: grid;
+  gap: var(--hp-space-5);
+}
+
+@media (min-width: 640px) {
+  .hp-grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hp-grid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .hp-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .hp-grid--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hp-grid--wide-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1180px) {
+  .hp-grid--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---- Utilities ---------------------------------------------------------------- */
+.hp-text-center {
+  text-align: center;
+}
+
+.hp-mx-auto {
+  margin-inline: auto;
+}
+
+.hp-muted {
+  color: var(--hp-color-text-muted);
+}
+
+.hp-lede {
+  font-size: var(--hp-text-md);
+  color: var(--hp-color-text-muted);
+  line-height: var(--hp-leading-normal);
+}
+
+.hp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hp-ambient-veil {
+  position: absolute;
+  inset: 0;
+  background: var(--hp-ambient-veil);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hp-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hp-orb--blue {
+  background: var(--hp-ambient-blue);
+}
+
+.hp-orb--yellow {
+  background: var(--hp-ambient-yellow);
+}
+
+/* ---- Route skeleton (Suspense fallback — prevents layout jump) --------------- */
+@keyframes hp-shimmer {
+  0% {
+    background-position: -420px 0;
+  }
+  100% {
+    background-position: 420px 0;
+  }
+}
+
+.hp-skeleton {
+  border-radius: var(--hp-radius-md);
+  background: linear-gradient(
+    90deg,
+    var(--hp-blue-50) 0%,
+    var(--hp-yellow-50) 40%,
+    var(--hp-blue-50) 80%
+  );
+  background-size: 840px 100%;
+  animation: hp-shimmer 1.4s linear infinite;
+}
+
+.hp-skeleton-page {
+  padding-block: var(--hp-section-y);
+}
+
+.hp-skeleton-line {
+  height: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+/* ---- Scroll reveal (respects reduced motion) --------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .hp-reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity var(--hp-dur-slow) var(--hp-ease), transform var(--hp-dur-slow) var(--hp-ease);
+  }
+
+  .hp-reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hp-pill--green {
+  background: var(--hp-color-success-soft);
+  color: var(--hp-color-success);
+  border-color: #bfe6d3;
+}
+
+/* ---- Prose ---------------------------------------------------------------- */
+.hp-prose {
+  max-width: 70ch;
+  color: var(--hp-color-text);
+}
+
+.hp-prose > * + * {
+  margin-top: 1rem;
+}
+
+.hp-prose h2 {
+  font-size: var(--hp-text-xl);
+  margin-top: var(--hp-space-6);
+}
+
+.hp-prose h3 {
+  font-size: var(--hp-text-md);
+  margin-top: var(--hp-space-5);
+}
+
+.hp-prose ul li + li {
+  margin-top: 0.5rem;
+}
+
+.hp-prose li::marker {
+  color: var(--hp-yellow-500);
+}
+
+/* ---- Check list (blue tick / yellow tick) ---------------------------------- */
+.hp-ticks {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.hp-ticks li {
+  position: relative;
+  padding-left: 2rem;
+  line-height: var(--hp-leading-snug);
+}
+
+.hp-ticks li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--hp-blue-50) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231350a0' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 0.75rem no-repeat;
+  border: 1px solid var(--hp-blue-200);
+}
+
+.hp-ticks--sun li::before {
+  background-color: var(--hp-yellow-50);
+  border-color: var(--hp-yellow-200);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cf8708' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+
+.hp-section--tight {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+
+.hp-section--sunken {
+  background: var(--hp-surface-sunken);
+}
+
+.hp-stack > * + * {
+  margin-top: var(--flow, var(--hp-space-4));
+}

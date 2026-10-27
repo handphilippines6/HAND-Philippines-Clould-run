@@ -1,0 +1,137 @@
+/* Ported from model1/hp-styles.js (components/ui/Button.css). */
+
+.hp-btn {
+  --btn-y: 0.8rem;
+  --btn-x: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 48px;
+  padding: var(--btn-y) var(--btn-x);
+  font-size: var(--hp-text-sm);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border-radius: var(--hp-radius-pill);
+  border: 2px solid transparent;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--hp-dur) var(--hp-ease), box-shadow var(--hp-dur) var(--hp-ease),
+    background-color var(--hp-dur) var(--hp-ease), color var(--hp-dur) var(--hp-ease),
+    border-color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.hp-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.hp-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---- Sizes ------------------------------------------------------------- */
+.hp-btn--sm {
+  min-height: 44px;
+  --btn-y: 0.55rem;
+  --btn-x: 1.15rem;
+  font-size: var(--hp-text-xs);
+}
+
+.hp-btn--lg {
+  min-height: 56px;
+  --btn-y: 1rem;
+  --btn-x: 2.1rem;
+  font-size: var(--hp-text-base);
+}
+
+.hp-btn--full {
+  width: 100%;
+}
+
+/* ---- Variants ---------------------------------------------------------- */
+.hp-btn--primary {
+  background: var(--hp-color-primary);
+  color: #fff;
+  box-shadow: var(--hp-shadow-glow-blue);
+}
+
+.hp-btn--primary:hover:not(:disabled) {
+  background: var(--hp-color-primary-hover);
+  color: #fff;
+  box-shadow: 0 14px 36px rgba(19, 80, 160, 0.26);
+}
+
+.hp-btn--sun {
+  background: var(--hp-gradient-sun);
+  color: var(--hp-ink-900);
+  box-shadow: var(--hp-shadow-glow-yellow);
+}
+
+.hp-btn--sun:hover:not(:disabled) {
+  color: var(--hp-ink-900);
+  box-shadow: 0 14px 36px rgba(242, 164, 19, 0.34);
+}
+
+.hp-btn--outline {
+  background: #fff;
+  color: var(--hp-color-primary);
+  border-color: var(--hp-blue-200);
+  box-shadow: var(--hp-shadow-xs);
+}
+
+.hp-btn--outline:hover:not(:disabled) {
+  border-color: var(--hp-blue-500);
+  color: var(--hp-blue-700);
+  box-shadow: var(--hp-shadow-md);
+}
+
+.hp-btn--ghost {
+  background: transparent;
+  color: var(--hp-color-primary);
+  border-color: transparent;
+}
+
+.hp-btn--ghost:hover:not(:disabled) {
+  background: var(--hp-blue-50);
+  color: var(--hp-blue-700);
+}
+
+.hp-btn--quiet {
+  background: var(--hp-surface-sunken);
+  color: var(--hp-color-text);
+  border-color: var(--hp-color-border);
+}
+
+.hp-btn--quiet:hover:not(:disabled) {
+  background: #fff;
+  color: var(--hp-color-text-strong);
+  border-color: var(--hp-blue-300);
+  box-shadow: var(--hp-shadow-sm);
+}
+
+.hp-btn--onDark {
+  background: #fff;
+  color: var(--hp-blue-700);
+}
+
+.hp-btn--onDark:hover:not(:disabled) {
+  background: var(--hp-yellow-400);
+  color: var(--hp-ink-900);
+}
+
+.hp-btn__icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.hp-btn__label {
+  display: inline-block;
+}

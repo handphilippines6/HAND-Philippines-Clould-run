@@ -1,0 +1,1493 @@
+/* Ported from model1/hp-styles.js — shell integration appendix, responsive
+   pass, and dialog design pass. Import AFTER all component stylesheets so the
+   cascade matches the Wix shadow tree (App.jsx does this). */
+
+/* Views render inside <main>; give them the design page context. */
+.hp-page {
+  font-family: var(--hp-font-sans);
+  font-size: var(--hp-text-base);
+  line-height: var(--hp-leading-normal);
+  color: var(--hp-color-text);
+  background: var(--hp-canvas);
+  display: block;
+}
+
+/* The shell owns the skip link; keep it above the sticky header. */
+.hp-skip-link {
+  position: absolute;
+  left: var(--hp-space-4);
+  top: -100px;
+  z-index: var(--hp-z-skip);
+  background: var(--hp-blue-700);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--hp-radius-sm);
+  font-weight: 600;
+  box-shadow: var(--hp-shadow-lg);
+  transition: top var(--hp-dur) var(--hp-ease);
+}
+
+.hp-skip-link:focus {
+  top: var(--hp-space-4);
+  color: #fff;
+}
+
+/* Shell nav uses <button data-route> (View router), so mirror the design's
+   link affordances on buttons and honour aria-current set by the router. */
+.hp-nav__link,
+.hp-drawer__link,
+.hp-drawer__sub-link {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.hp-nav__link[aria-current="page"] {
+  color: var(--hp-blue-700);
+  background: var(--hp-blue-50);
+  box-shadow: inset 0 -2px 0 var(--hp-yellow-500);
+}
+
+.hp-drawer__link[aria-current="page"] {
+  color: var(--hp-blue-600);
+}
+
+/* Dropdown triggers carry their own chevron marker. */
+.hp-nav__link--drop::after {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-left: 0.35rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  opacity: 0.7;
+}
+
+/* Header layout extras that the generated Header.css does not cover. */
+.hp-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hp-space-4);
+  min-height: var(--hp-header-h);
+}
+
+.hp-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* The announcement strip lives above the header in the shell. */
+.hp-announce {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.5rem var(--hp-gutter);
+  background: var(--hp-blue-50);
+  border-bottom: 1px solid var(--hp-blue-100);
+  font-size: var(--hp-text-xs);
+  color: var(--hp-ink-600);
+}
+
+.hp-announce strong {
+  color: var(--hp-blue-700);
+}
+
+/* Legacy utility classes used by views that are not yet ported must keep
+   working next to the design system (donate portal, admin, etc.). */
+.view {
+  max-width: var(--hp-container);
+  margin-inline: auto;
+}
+
+/* ---- Shell nav buttons (design markup uses <button> for data-route) ---- */
+.hp-nav__link,
+.hp-nav__drop-link,
+.hp-drawer__link,
+.hp-drawer__sub-link {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+/* ---- Burger icon swap driven by aria-expanded (shell toggles the attr) ---- */
+.hp-burger .hp-ico-close { display: none; }
+.hp-burger[aria-expanded="true"] .hp-ico-menu { display: none; }
+.hp-burger[aria-expanded="true"] .hp-ico-close { display: block; }
+/* The legacy .mobile-nav rule adds padding the design drawer does not have. */
+.hp-drawer.mobile-nav { padding: 0; }
+/* ---- Campaign progress (design pages/donate.css) ---- */
+.hp-progress {
+  display: grid;
+  gap: 0.5rem;
+}
+.hp-progress__bar {
+  height: 12px;
+  border-radius: var(--hp-radius-pill);
+  background: var(--hp-blue-100);
+  overflow: hidden;
+}
+.hp-progress__fill {
+  height: 100%;
+  border-radius: var(--hp-radius-pill);
+  background: var(--hp-gradient-sun);
+  transition: width var(--hp-dur-slow) var(--hp-ease);
+}
+.hp-progress__label {
+  font-size: var(--hp-text-sm);
+  font-weight: 700;
+  color: var(--hp-color-text-strong);
+}
+
+/* ---- Real logo artwork (shell header + footer) ---------------------------- */
+.hp-logo__mark {
+  width: 44px;
+  height: 44px;
+}
+
+.hp-logo__mark img {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.hp-footer__logo img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+/* ---- Interactive impact map (home) --------------------------------------- */
+.hp-map__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hp-space-4);
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: var(--hp-space-6);
+}
+
+.hp-map__head .hp-section-lead {
+  max-width: 34rem;
+  margin: 0;
+}
+
+.hp-map {
+  display: grid;
+  gap: var(--hp-space-5);
+  padding: clamp(1rem, 3vw, 2rem);
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-xl);
+  box-shadow: var(--hp-shadow-lg);
+}
+
+@media (min-width: 1024px) {
+  .hp-map {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: center;
+  }
+}
+
+.hp-map__canvas {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+  padding: var(--hp-space-4);
+  background: var(--hp-surface-sunken);
+  border-radius: var(--hp-radius-lg);
+}
+
+.hp-map__svg {
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  filter: drop-shadow(0 6px 14px rgba(10, 28, 51, 0.14));
+}
+
+.hp-map__land {
+  fill: #cbd5e1;
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+}
+
+.hp-map__pin {
+  color: var(--hp-blue-600);
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--hp-dur) var(--hp-ease);
+}
+
+.hp-map__pin--sun {
+  color: var(--hp-yellow-500);
+}
+
+.hp-map__pin:hover,
+.hp-map__pin:focus-visible {
+  transform: scale(1.22);
+}
+
+.hp-map__pin:focus-visible {
+  outline: 3px solid var(--hp-blue-400);
+  outline-offset: 3px;
+}
+
+.hp-map__dot {
+  fill: var(--hp-blue-600);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.hp-map__pin--sun .hp-map__dot {
+  fill: var(--hp-yellow-500);
+}
+
+.hp-map__pin.is-active .hp-map__dot {
+  stroke: var(--hp-ink-900);
+  stroke-width: 3;
+}
+
+.hp-map__ping {
+  fill: currentColor;
+  opacity: 0.35;
+  animation: hp-map-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes hp-map-ping {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.45;
+  }
+  70%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.hp-map__label {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--hp-ink-700);
+}
+
+.hp-map__hint {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  margin: 0;
+  padding: 0.35rem 0.6rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-sm);
+  box-shadow: var(--hp-shadow-xs);
+  font-size: 11px;
+  color: var(--hp-color-text-muted);
+}
+
+.hp-map__panel {
+  display: grid;
+  gap: var(--hp-space-5);
+}
+
+.hp-map__card {
+  display: grid;
+  gap: 0.9rem;
+  padding: var(--hp-space-5);
+  background: var(--hp-surface-sunken);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-lg);
+}
+
+.hp-map__region {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--hp-text-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hp-blue-600);
+}
+
+.hp-map__region svg {
+  flex-shrink: 0;
+}
+
+.hp-map__title {
+  font-size: var(--hp-text-xl);
+  color: var(--hp-color-text-strong);
+}
+
+.hp-map__desc {
+  margin: 0;
+  font-size: var(--hp-text-sm);
+  color: var(--hp-color-text);
+}
+
+.hp-map__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid var(--hp-color-border);
+  list-style: none;
+}
+
+.hp-map__tags li {
+  padding: 0.3rem 0.65rem;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-pill);
+  font-size: var(--hp-text-xs);
+  font-weight: 600;
+  color: var(--hp-color-text);
+}
+
+.hp-map__cta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--hp-text-xs);
+  font-weight: 800;
+  color: var(--hp-blue-600);
+}
+
+.hp-map__tabs-label {
+  margin: 0 0 0.5rem;
+  font-size: var(--hp-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hp-color-text-muted);
+}
+
+.hp-map__tabs-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.hp-map__tab {
+  padding: 0.55rem 0.75rem;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-md);
+  font-size: var(--hp-text-xs);
+  font-weight: 600;
+  color: var(--hp-color-text);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--hp-dur) var(--hp-ease), border-color var(--hp-dur) var(--hp-ease), color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-map__tab:hover {
+  background: var(--hp-blue-50);
+  border-color: var(--hp-blue-200);
+}
+
+.hp-map__tab.is-active {
+  background: var(--hp-blue-50);
+  border-color: var(--hp-blue-400);
+  color: var(--hp-blue-700);
+}
+
+/* ---- Roster (grouped: board, officers, committees, staff, volunteers) ---- */
+.hp-roster__group {
+  margin-top: var(--hp-space-7);
+}
+
+.hp-roster__group:first-of-type {
+  margin-top: var(--hp-space-5);
+}
+
+.hp-roster__group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 var(--hp-space-4);
+  font-size: var(--hp-text-lg);
+  color: var(--hp-blue-700);
+}
+
+.hp-roster__group-title::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--hp-color-border);
+}
+
+.hp-roster__grid {
+  display: grid;
+  gap: var(--hp-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+}
+
+.hp-roster__grid .hp-person__body {
+  padding: var(--hp-space-3);
+}
+
+.hp-roster__grid .hp-person__name {
+  font-size: var(--hp-text-sm);
+}
+
+.hp-roster__grid .hp-person__role {
+  font-size: var(--hp-text-xs);
+}
+
+.hp-roster__grid .hp-person__media .hp-img__frame {
+  border-radius: 0;
+}
+
+.hp-person--pending {
+  border-style: dashed;
+  background: var(--hp-blue-50);
+  box-shadow: none;
+}
+
+.hp-person--pending .hp-img__frame {
+  opacity: 0.7;
+}
+
+.hp-person--pending .hp-person__name,
+.hp-person--pending .hp-person__role {
+  color: var(--hp-color-text-muted);
+}
+
+.hp-roster__note {
+  margin: var(--hp-space-6) 0 0;
+  font-size: var(--hp-text-sm);
+  color: var(--hp-color-text-muted);
+  text-align: center;
+}
+
+/* ---- Footer (compact: brand + legal + contact only) ---------------------- */
+.hp-footer {
+  margin-top: var(--hp-space-6);
+  padding-top: var(--hp-space-6);
+  padding-bottom: var(--hp-space-4);
+}
+
+.hp-footer__compact {
+  display: grid;
+  gap: var(--hp-space-5);
+  padding-bottom: var(--hp-space-5);
+}
+
+@media (min-width: 860px) {
+  .hp-footer__compact {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.hp-footer__compact .hp-footer__logo {
+  margin-bottom: var(--hp-space-3);
+}
+
+.hp-footer__compact .hp-footer__name {
+  font-size: var(--hp-text-base);
+}
+
+.hp-footer__compact .hp-footer__legal {
+  margin: 0;
+}
+
+.hp-footer__compact .hp-footer__legal + .hp-footer__legal {
+  margin-top: 0.15rem;
+}
+
+.hp-footer__contact {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.hp-footer__line {
+  margin: 0;
+  font-size: var(--hp-text-sm);
+  color: var(--hp-color-text-muted);
+}
+
+.hp-footer__line a {
+  color: var(--hp-blue-600);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hp-footer__line a:hover {
+  text-decoration: underline;
+}
+
+.hp-footer__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--hp-text-sm);
+  font-weight: 600;
+  color: var(--hp-blue-600);
+  cursor: pointer;
+}
+
+.hp-footer__link:hover {
+  text-decoration: underline;
+}
+
+.hp-footer__bottom {
+  padding-top: var(--hp-space-4);
+}
+
+.hp-footer__credit {
+  margin: 0;
+  font-size: var(--hp-text-xs);
+  color: var(--hp-color-text-muted);
+}
+/* ---- Dialog layer (every form opens here) -------------------------------- */
+.hp-modal-host {
+  position: relative;
+  z-index: 90;
+}
+
+.hp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.5rem, 2.5vw, 2rem);
+}
+
+.hp-modal__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 26, 61, 0.58);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity var(--hp-dur) var(--hp-ease);
+}
+
+.hp-modal.is-open .hp-modal__scrim {
+  opacity: 1;
+}
+
+.hp-modal__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(680px, 100%);
+  max-height: min(88dvh, 900px);
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-lg);
+  box-shadow: var(--hp-shadow-lg);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px) scale(0.99);
+  transition: opacity var(--hp-dur) var(--hp-ease), transform var(--hp-dur) var(--hp-ease);
+}
+
+.hp-modal.is-open .hp-modal__panel {
+  opacity: 1;
+  transform: none;
+}
+
+.hp-modal__panel--wide {
+  width: min(1080px, 100%);
+}
+
+.hp-modal__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--hp-space-4);
+  padding: clamp(1.1rem, 2.4vw, 1.6rem) clamp(1.1rem, 2.6vw, 1.8rem);
+  background: linear-gradient(180deg, #fff 0%, var(--hp-blue-50) 100%);
+  border-bottom: 1px solid var(--hp-color-border);
+}
+
+.hp-modal__heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hp-modal__title {
+  margin: var(--hp-space-2) 0 0;
+  font-size: clamp(1.15rem, 0.9rem + 1.1vw, 1.6rem);
+  line-height: 1.2;
+  font-family: var(--hp-font-display);
+}
+
+.hp-modal__lead {
+  margin: var(--hp-space-2) 0 0;
+  max-width: 62ch;
+  font-size: var(--hp-text-sm);
+  color: var(--hp-color-text-muted);
+  line-height: var(--hp-leading-normal);
+}
+
+.hp-modal__close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-pill);
+  background: #fff;
+  color: var(--hp-blue-900);
+  cursor: pointer;
+  transition: background-color var(--hp-dur) var(--hp-ease), border-color var(--hp-dur) var(--hp-ease), color var(--hp-dur) var(--hp-ease);
+}
+
+.hp-modal__close:hover {
+  background: var(--hp-blue-900);
+  border-color: var(--hp-blue-900);
+  color: #fff;
+}
+
+.hp-modal__body {
+  padding: clamp(1.1rem, 2.6vw, 1.8rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Inside a dialog the form is the only surface, so drop its own frame. */
+.hp-modal__body .hp-cform {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.hp-modal__body .hp-cform__grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 560px) {
+  .hp-modal__body .hp-cform__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---- Giving dialog: portal left, DAF + check right ---------------------- */
+.hp-donatemodal {
+  display: grid;
+  gap: clamp(1rem, 2.4vw, 1.75rem);
+}
+
+/* Fixed 360px portal column beside the two fee-free routes. */
+@media (min-width: 940px) {
+  .hp-donatemodal {
+    grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.hp-donatemodal__main {
+  min-width: 0;
+  max-width: 360px;
+}
+
+/* The page pins the panel to the viewport; inside a dialog it is in flow. */
+.hp-donatemodal__main .donation-panel {
+  position: static;
+  top: auto;
+}
+
+.hp-donatemodal__side {
+  display: grid;
+  gap: var(--hp-space-4);
+  align-content: start;
+  min-width: 0;
+}
+
+.hp-give {
+  display: grid;
+  gap: var(--hp-space-4);
+}
+
+.hp-give__card {
+  padding: clamp(1rem, 2vw, 1.35rem);
+  background: var(--hp-surface-sunken);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-md);
+}
+
+.hp-give__title {
+  margin: var(--hp-space-2) 0 0;
+  font-size: var(--hp-text-lg);
+  line-height: 1.25;
+}
+
+.hp-give__lead {
+  margin: var(--hp-space-2) 0 0;
+  font-size: var(--hp-text-sm);
+  color: var(--hp-color-text-muted);
+  line-height: var(--hp-leading-normal);
+}
+
+.hp-give__steps {
+  margin: var(--hp-space-4) 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+  font-size: var(--hp-text-sm);
+  color: var(--hp-color-text);
+}
+
+.hp-give__facts {
+  margin: var(--hp-space-4) 0 0;
+  display: grid;
+  gap: 0.4rem;
+  font-size: var(--hp-text-xs);
+}
+
+.hp-give__facts dt {
+  font-weight: 700;
+  color: var(--hp-blue-700);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hp-give__facts dd {
+  margin: 0.1rem 0 0;
+  color: var(--hp-color-text-muted);
+  word-break: break-word;
+}
+
+.hp-give__card .hp-btn {
+  margin-top: var(--hp-space-4);
+}
+
+/* ---- Trigger card (stands where an inline form used to be) -------------- */
+.hp-ftrigger-wrap {
+  margin: 2.5rem auto 0;
+  max-width: 760px;
+}
+
+.hp-ftrigger__ticks {
+  margin: var(--hp-space-4) 0 0;
+}
+
+.hp-ftrigger__foot {
+  margin-top: var(--hp-space-5);
+}
+
+.hp-ftrigger__note {
+  margin: var(--hp-space-3) 0 0;
+  font-size: var(--hp-text-xs);
+  color: var(--hp-color-text-muted);
+}
+
+button.hp-card__cta {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ===== Responsive pass ===================================================
+   The tokens above are already fluid (clamp on type, gutter, section rhythm).
+   This pass adds the breakpoints the layouts actually need - 360px phones up
+   to 1440px+ desktops - and makes them touch-smart: 44px targets, 16px
+   inputs (no iOS zoom-on-focus), dvh dialog heights, safe-area padding, and
+   horizontal scrollers instead of squeezed content.
+   ===================================================================== */
+
+/* ---- Adaptive typography ------------------------------------------------ */
+.hp-section-title,
+.hp-pagehead__title,
+.hp-hero__title,
+.hp-modal__title,
+.hp-closer__title {
+  text-wrap: balance;
+}
+
+.hp-section-lead,
+.hp-pagehead__lead,
+.hp-modal__lead,
+.hp-give__lead,
+.hp-card__text {
+  text-wrap: pretty;
+}
+
+/* ---- Touch devices: real targets, no hover-only affordances ------------ */
+@media (hover: none), (pointer: coarse) {
+  .hp-nav__link,
+  .hp-nav__drop-link,
+  .hp-drawer__link,
+  .hp-drawer__sub-link,
+  .hp-footer__line a,
+  button.hp-card__cta {
+    min-height: 44px;
+  }
+
+  .hp-card--interactive:hover,
+  .hp-stat:hover,
+  .hp-sched__item:hover {
+    transform: none;
+  }
+}
+
+/* ---- Very small phones (<= 380px) -------------------------------------- */
+@media (max-width: 380px) {
+  :root {
+    --hp-text-3xl: clamp(1.65rem, 8vw, 1.95rem);
+    --hp-text-4xl: clamp(1.95rem, 9vw, 2.3rem);
+  }
+
+  .hp-header__donate {
+    padding-inline: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .hp-roster__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---- Phones (<= 480px) ------------------------------------------------- */
+@media (max-width: 480px) {
+  :root {
+    --hp-header-h: 62px;
+    --hp-section-y: clamp(2.75rem, 10vw, 3.75rem);
+    --hp-space-7: 2.25rem;
+    --hp-space-8: 3rem;
+  }
+
+  .hp-container {
+    padding-inline: 1rem;
+  }
+
+  /* One CTA per row, thumb-sized, instead of three squeezed labels. */
+  .hp-hero__cta,
+  .hp-pagehead__cta,
+  .hp-cta-row {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .hp-hero__cta .hp-btn,
+  .hp-pagehead__cta .hp-btn,
+  .hp-cta-row .hp-btn,
+  .hp-closer .hp-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hp-hero__facts {
+    gap: 0.35rem;
+    font-size: var(--hp-text-xs);
+  }
+
+  .hp-closer {
+    padding: 1.35rem;
+  }
+
+  .hp-map {
+    padding: 0.9rem;
+  }
+
+  .hp-map__canvas {
+    min-height: 250px;
+    padding: 0.5rem;
+  }
+
+  .hp-map__hint {
+    display: none;
+  }
+}
+
+/* ---- Dialog behaviour on small screens: bottom sheet ------------------ */
+@media (max-width: 700px) {
+  .hp-modal {
+    align-items: end;
+    padding: 0.5rem 0.5rem 0;
+  }
+
+  .hp-modal__panel {
+    width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .hp-modal__body {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+
+  .hp-donatemodal {
+    gap: 1rem;
+  }
+
+  /* Grabber handle: a clear "sheet" affordance for the bottom-sheet dialogs. */
+  .hp-modal__panel::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--hp-color-border);
+    z-index: 2;
+  }
+
+  /* A table or wide block scrolls inside the page instead of the page. */
+  .hp-page table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
+/* ---- Phones and small tablets (<= 640px) ------------------------------ */
+@media (max-width: 640px) {
+  .hp-roster__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hp-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hp-stats .hp-stat:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .hp-gallery__grid--2,
+  .hp-gallery__grid--3,
+  .hp-gallery__grid--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hp-logo__text {
+    min-width: 0;
+  }
+
+  .hp-logo__name {
+    font-size: 0.95rem;
+  }
+
+  .hp-logo__full {
+    display: none;
+  }
+
+  /* 16px fields stop mobile Safari from zooming the page on focus. */
+  .hp-page input:not([type="checkbox"]):not([type="radio"]),
+  .hp-page select,
+  .hp-page textarea,
+  .hp-modal input:not([type="checkbox"]):not([type="radio"]),
+  .hp-modal select,
+  .hp-modal textarea {
+    font-size: 16px;
+  }
+
+  .hp-cform__foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hp-cform__foot .hp-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Region tabs scroll sideways instead of stacking five rows deep. */
+  .hp-map__tabs-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+  }
+
+  .hp-map__tab {
+    min-width: 140px;
+  }
+}
+
+/* ---- Tablets (641px - 1023px) ---------------------------------------- */
+@media (min-width: 641px) and (max-width: 1023px) {
+  .hp-hero__media {
+    width: 100%;
+    max-width: 620px;
+    margin-inline: auto;
+  }
+
+  .hp-roster__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hp-modal__panel--wide {
+    width: min(720px, 100%);
+  }
+}
+
+/* ---- Desktop (>= 1180px) --------------------------------------------- */
+@media (min-width: 1180px) {
+  .hp-roster__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .hp-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---- Large desktop (>= 1440px) -------------------------------------- */
+@media (min-width: 1440px) {
+  :root {
+    --hp-container: 1290px;
+    --hp-section-y: clamp(4.5rem, 6vw, 7rem);
+  }
+
+  .hp-modal__panel--wide {
+    width: min(1160px, 100%);
+  }
+}
+
+/* ---- Short viewports (landscape phones, small laptops) --------------- */
+@media (max-height: 560px) and (orientation: landscape) {
+  .hp-drawer {
+    max-height: calc(100vh - var(--hp-header-h));
+    max-height: calc(100dvh - var(--hp-header-h));
+  }
+
+  .hp-modal__panel {
+    max-height: 96vh;
+    max-height: 96dvh;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 800px) {
+  .hp-modal__panel {
+    max-height: 92vh;
+    max-height: 92dvh;
+  }
+}
+/* ---- Dialog surface variants ------------------------------------------- */
+/* standard: a payment-form width. Wide enough for the card flow and the two
+   giving routes side by side, narrow enough that the portal column lands on a
+   standard gateway form width (about 520px). */
+.hp-modal__panel--standard {
+  width: min(1024px, 100%);
+}
+
+.hp-modal__close--float {
+  position: absolute;
+  top: clamp(0.7rem, 1.6vw, 1.05rem);
+  right: clamp(0.7rem, 1.6vw, 1.05rem);
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(2px);
+}
+
+/* ---- Giving dialog: headerless surface, intro, two columns ------------- */
+/* The surface is flush: the intro and the columns own the padding. */
+.hp-modal[data-modal-name="donate"] .hp-modal__body {
+  padding: 0;
+}
+
+.hp-donatemodal {
+  padding: clamp(1rem, 2.4vw, 1.5rem);
+}
+
+.hp-donate__intro {
+  padding: clamp(1rem, 2.4vw, 1.35rem) clamp(1rem, 2.4vw, 1.5rem) 0;
+  padding-right: clamp(3.25rem, 8vw, 4rem); /* clear of the floating close */
+}
+
+.hp-donate__title {
+  margin: 0;
+  font-family: var(--hp-font-display);
+  font-size: clamp(1.15rem, 1rem + 0.9vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--hp-color-text-strong);
+}
+
+.hp-donate__lead {
+  margin: 0.3rem 0 0;
+  max-width: 62ch;
+  font-size: var(--hp-text-sm);
+  line-height: var(--hp-leading-normal);
+  color: var(--hp-color-text-muted);
+}
+
+/* The close control floats over the intro on this surface. */
+.hp-modal[data-modal-name="donate"] .hp-modal__close--float {
+  top: clamp(0.85rem, 2vw, 1.2rem);
+  right: clamp(0.85rem, 2vw, 1.2rem);
+  box-shadow: var(--hp-shadow-xs);
+}
+
+/* The giving CTA label never wraps or crowds its icon. */
+.hp-donatemodal .panel-actions__cta {
+  white-space: nowrap;
+}
+
+.hp-donatemodal .panel-actions__cta [data-button-text] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Dialog forms: one control size, balanced rows -------------------- */
+.hp-modal__body .hp-cform__grid {
+  gap: clamp(0.85rem, 1.6vw, 1.15rem);
+}
+
+@media (min-width: 560px) {
+  .hp-modal__body .hp-cform__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hp-modal__body .hp-field--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.hp-modal__body .hp-field {
+  gap: 0.35rem;
+}
+
+.hp-modal__body .hp-field label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--hp-color-text-strong);
+}
+
+.hp-modal__body .hp-field input,
+.hp-modal__body .hp-field select,
+.hp-modal__body .hp-field textarea {
+  min-height: 50px;
+  padding: 0.75rem 0.9rem;
+  font-size: 1rem;
+  line-height: 1.35;
+  border-radius: var(--hp-radius-md);
+}
+
+.hp-modal__body .hp-field select {
+  padding-right: 2.6rem;
+}
+
+.hp-modal__body .hp-field textarea {
+  min-height: 8.25rem;
+}
+
+.hp-modal__body .hp-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: var(--hp-space-4);
+  padding: 0.85rem 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  background: var(--hp-blue-50);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-md);
+}
+
+.hp-modal__body .hp-consent input {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+}
+
+.hp-modal__body .hp-cform__foot {
+  margin-top: var(--hp-space-5);
+  padding-top: var(--hp-space-5);
+  border-top: 1px solid var(--hp-color-border);
+}
+
+.hp-modal__body .hp-cform__privacy {
+  max-width: 48ch;
+}
+
+@media (min-width: 620px) {
+  .hp-modal__body .hp-cform__foot {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--hp-space-5);
+  }
+}
+
+.hp-modal__body .hp-cform__foot .hp-btn {
+  min-width: 11.5rem;
+  min-height: 50px;
+  justify-content: center;
+}
+
+@media (max-width: 619px) {
+  .hp-modal__body .hp-cform__foot .hp-btn {
+    width: 100%;
+  }
+}
+
+/* ===== Dialog design pass (every form modal) ============================
+   Structure, spacing and interaction from the approved inquiry design, kept
+   in the HAND palette: accent rule, badge + title + lead header, tinted
+   fields that turn white with a brand ring on focus, inline field errors,
+   consent and privacy blocks, a full-width submit, and a success view.
+   ===================================================================== */
+.hp-modal__rule {
+  display: block;
+  flex: 0 0 auto;
+  height: 6px;
+  background: var(--hp-gradient-rule);
+}
+
+.hp-modal__head {
+  align-items: flex-start;
+  padding: clamp(1rem, 2.4vw, 1.4rem) clamp(1.1rem, 2.6vw, 1.6rem) 0.4rem;
+  background: #fff;
+  border-bottom: 0;
+}
+
+.hp-modal__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--hp-blue-200);
+  border-radius: var(--hp-radius-pill);
+  background: var(--hp-blue-50);
+  color: var(--hp-blue-800);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.hp-modal__title {
+  margin: 0;
+  font-size: clamp(1.2rem, 1rem + 1vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.hp-modal__lead {
+  margin: 0.35rem 0 0;
+  font-size: var(--hp-text-sm);
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.hp-modal__close {
+  border-color: transparent;
+  background: var(--hp-blue-50);
+  color: var(--hp-color-text-muted);
+}
+
+.hp-modal__close:hover {
+  border-color: transparent;
+  background: var(--hp-blue-100);
+  color: var(--hp-blue-900);
+}
+
+.hp-modal__body {
+  padding: clamp(0.9rem, 2.2vw, 1.25rem) clamp(1.1rem, 2.6vw, 1.6rem) clamp(1.1rem, 2.6vw, 1.5rem);
+}
+
+/* Required marker (rose, design) + the shared optional marker. */
+.hp-req {
+  color: #e11d48;
+}
+
+/* Fields: tinted surface that turns white with a brand ring on focus. */
+.hp-cform .hp-field label,
+.hp-modal__body .hp-field label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--hp-color-text-strong);
+}
+
+.hp-cform .hp-field input,
+.hp-cform .hp-field select,
+.hp-cform .hp-field textarea {
+  background: var(--hp-surface-sunken);
+  border-color: var(--hp-color-border);
+}
+
+.hp-cform .hp-field input:focus,
+.hp-cform .hp-field select:focus,
+.hp-cform .hp-field textarea:focus {
+  background: #fff;
+  border-color: var(--hp-blue-600);
+  box-shadow: 0 0 0 4px rgba(29, 99, 216, 0.12);
+}
+
+.hp-cform .hp-field input[aria-invalid="true"],
+.hp-cform .hp-field select[aria-invalid="true"],
+.hp-cform .hp-field textarea[aria-invalid="true"] {
+  border-color: #e11d48;
+  background: #fff5f6;
+}
+
+/* Inline field errors: small rose line with a status glyph. */
+.hp-field__err {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #be123c;
+}
+
+.hp-field__err svg {
+  flex: 0 0 auto;
+}
+
+/* Consent block (design) - same treatment in dialogs and on the contact page. */
+.hp-consent,
+.hp-modal__body .hp-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: var(--hp-space-4);
+  padding: 0.75rem 0.9rem;
+  font-size: var(--hp-text-xs);
+  font-weight: 500;
+  line-height: 1.55;
+  background: var(--hp-surface-sunken);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-md);
+}
+
+.hp-consent input {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+}
+
+/* Privacy safeguard note (design: soft green trust block above the submit). */
+.hp-cform__privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: var(--hp-space-4) 0 0;
+  max-width: none;
+  padding: 0.7rem 0.85rem;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--hp-radius-md);
+  color: #047857;
+  font-size: var(--hp-text-xs);
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.hp-cform__privacy svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+}
+
+/* Footer: one full-width action, no divider (the privacy block sits above). */
+.hp-cform__foot,
+.hp-modal__body .hp-cform__foot {
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: var(--hp-space-4);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.hp-cform__foot .hp-btn,
+.hp-modal__body .hp-cform__foot .hp-btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  justify-content: center;
+}
+
+/* Success view (design): emerald tile, title, copy, receipt, reset. */
+.hp-cform--done {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  text-align: center;
+}
+
+.hp-cform__done-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--hp-space-4);
+  border: 1px solid #a7f3d0;
+  border-radius: 16px;
+  background: #d1fae5;
+  color: #059669;
+}
+
+.hp-cform__done-title {
+  font-size: var(--hp-text-lg);
+  font-weight: 800;
+}
+
+.hp-cform__done-text {
+  margin-top: var(--hp-space-2);
+  font-size: var(--hp-text-sm);
+  line-height: var(--hp-leading-normal);
+  color: var(--hp-color-text-muted);
+}
+
+.hp-cform__receipt {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: var(--hp-space-4);
+  padding: var(--hp-space-4);
+  background: var(--hp-surface-sunken);
+  border: 1px solid var(--hp-color-border);
+  border-radius: var(--hp-radius-md);
+  font-size: var(--hp-text-xs);
+  text-align: left;
+}
+
+.hp-cform__receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--hp-space-4);
+  color: var(--hp-color-text-muted);
+}
+
+.hp-cform__receipt-row strong {
+  text-align: right;
+  color: var(--hp-color-text-strong);
+}
+
+.hp-cform--done .hp-btn {
+  margin-top: var(--hp-space-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-map__ping {
+    animation: none;
+    opacity: 0.25;
+  }
+}

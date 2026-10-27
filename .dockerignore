@@ -1,0 +1,8 @@
+node_modules
+dist
+.wix
+.git
+*.log
+wix-error.log
+server/data
+server/outbox

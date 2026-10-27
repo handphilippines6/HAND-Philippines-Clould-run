@@ -1,0 +1,7 @@
+----- CLI crash report at 2026-10-02T13:34:36.416Z
+Error Trace
+ProjectIsNotLinkable: ProjectIsNotLinkable
+    at <anonymous> (C:\Users\Administrator\AppData\Local\npm-cache\_npx\167aff61dff8be4c\node_modules\@wix\create-new-packages\headless-command\src\components\LinkCommand\LinkCommand.tsx:61:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+Error Info
+{}
